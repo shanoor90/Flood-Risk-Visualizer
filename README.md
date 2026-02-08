@@ -7,10 +7,24 @@ A comprehensive mobile application designed to visualize flood risks, enable rap
 Follow these steps exactly to get the project running on your machine:
 
 ### Step 1: Clone and Enter the Project
+**If you don't have the folder yet:**
 ```bash
 git clone https://github.com/shanoor90/Flood-Risk-Visualizer.git
 cd Flood-Risk-Visualizer
 ```
+
+**If you already have the folder (Error: "destination path already exists"):**
+If you see the error *"destination path already exists"*, it means you already have a folder named `Flood-Risk-Visualizer`. 
+- To get the **latest updates** without cloning again, run:
+  ```bash
+  cd Flood-Risk-Visualizer
+  git pull origin main
+  ```
+- If your folder is **broken/older** and you want a **fresh start**, delete it first:
+  ```bash
+  rm -rf Flood-Risk-Visualizer  # Caution: This deletes your local changes!
+  git clone https://github.com/shanoor90/Flood-Risk-Visualizer.git
+  ```
 
 ### Step 2: Initialize the Backend
 The backend manages the risk calculation engine and database connections.
