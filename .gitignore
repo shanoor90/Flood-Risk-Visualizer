@@ -59,6 +59,13 @@ web_modules/
 # Optional REPL history
 .node_repl_history
 
+# Expo
+.expo/
+frontend/.expo/
+
+# Firebase
+backend/config/serviceAccountKey.json
+
 # Output of 'npm pack'
 *.tgz
 
