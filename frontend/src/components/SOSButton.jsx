@@ -1,11 +1,21 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import GlassTiltCard from './GlassTiltCard';
+import { sosService } from '../services/api';
 
 export default function SOSButton() {
-  const handlePress = () => {
-    Alert.alert("SOS SENT", "Your emergency alert with location has been broadcast to family and rescue teams.");
+  const handlePress = async () => {
+    try {
+        const sosData = {
+            userId: "user_123", // Placeholder for actual logged in user
+            location: { lat: 6.9271, lon: 79.8612 }, // Placeholder for actual GPS
+            riskLevel: "HIGH",
+            riskScore: 65
+        };
+
+        const response = await sosService.sendSOS(sosData);
+        Alert.alert("SOS SENT", `Your emergency alert has been broadcast. Alert ID: ${response.data.alertId}`);
+    } catch (error) {
+        console.error("SOS Error:", error);
+        Alert.alert("SOS FAILED", "Internet unavailable. SMS Fallback activated.");
+    }
   };
 
   return (

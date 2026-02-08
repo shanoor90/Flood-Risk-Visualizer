@@ -1,23 +1,45 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { FontAwesome5 } from '@expo/vector-icons';
-import GlassTiltCard from './GlassTiltCard';
+import { riskService } from '../services/api';
 
 export default function RiskMapCard() {
+  const [riskData, setRiskData] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    // Default to Colombo coordinates for demo
+    const fetchRisk = async () => {
+      try {
+        const response = await riskService.getRiskData(6.9271, 79.8612);
+        setRiskData(response.data);
+      } catch (error) {
+        console.error("Error fetching risk data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRisk();
+  }, []);
+
+  const riskLevel = riskData?.risk?.level || 'LOW';
+  const riskScore = riskData?.risk?.score || 0;
+  const riskColor = riskData?.risk?.color || '#4ade80';
+  const lastUpdated = riskData?.risk?.lastUpdated || 'N/A';
+
   return (
     <GlassTiltCard style={styles.card}>
       <View style={styles.header}>
         <Text style={styles.title}>Flood Risk Visualization</Text>
+        <Text style={styles.timeTag}>Last Sync: {lastUpdated}</Text>
       </View>
       
       <View style={styles.mapPlaceholder}>
         <FontAwesome5 name="map-marked-alt" size={40} color="rgba(255,255,255,0.8)" />
-        <Text style={styles.mapText}>Interactive Map Area</Text>
+        <Text style={styles.mapText}>
+          {loading ? "Fetching data..." : `Live Location: ${riskData?.location?.lat}, ${riskData?.location?.lon}`}
+        </Text>
       </View>
 
       <View style={styles.riskBarContainer}>
-        <Text style={styles.riskLabel}>Current Risk Level</Text>
+        <Text style={styles.riskLabel}>Current Risk Level ({riskScore})</Text>
         <View style={styles.riskBar}>
             <LinearGradient
                 colors={['#4ade80', '#facc15', '#ef4444']} 
@@ -25,10 +47,10 @@ export default function RiskMapCard() {
                 end={{ x: 1, y: 0 }}
                 style={styles.gradientBar}
             />
-            {/* Indicator triangle */}
-            <View style={[styles.indicator, { left: '80%' }]} /> 
+            {/* Indicator triangle based on score */}
+            <View style={[styles.indicator, { left: `${Math.min(100, riskScore)}%` }]} /> 
         </View>
-        <Text style={styles.riskStatus}>High Risk</Text>
+        <Text style={[styles.riskStatus, { color: riskColor }]}>{riskLevel} Risk</Text>
       </View>
     </GlassTiltCard>
   );
@@ -41,11 +63,19 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#004aad',
+  },
+  timeTag: {
+    fontSize: 10,
+    color: '#666',
+    fontStyle: 'italic',
   },
   mapPlaceholder: {
     backgroundColor: 'rgba(0,0,0,0.1)',

@@ -1,14 +1,34 @@
-import React from 'react';
-import { StyleSheet, Text, View, Image } from 'react-native';
-import GlassTiltCard from './GlassTiltCard';
-
-const familyMembers = [
-  { id: 1, name: 'Mom', role: 'Safe', color: '#22c55e' },
-  { id: 2, name: 'Dad', role: 'Safe', color: '#22c55e' },
-  { id: 3, name: 'Sarah', role: 'Syncing...', color: '#eab308' },
-];
+import { familyService } from '../services/api';
 
 export default function FamilyList() {
+  const [familyMembers, setFamilyMembers] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchFamily = async () => {
+      try {
+        const userId = "user_123"; // Placeholder
+        const response = await familyService.getFamilyRisk(userId);
+        // Map the results to the UI format
+        const mappedData = response.data.map(m => ({
+          id: m.memberId,
+          name: m.memberName,
+          role: m.risk.level,
+          color: m.risk.color,
+          score: m.risk.score
+        }));
+        setFamilyMembers(mappedData);
+      } catch (error) {
+        console.error("Error fetching family risk:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFamily();
+  }, []);
+
+  if (loading) return <Text style={{color: '#fff', textAlign: 'center'}}>Syncing Family Circle...</Text>;
+
   return (
     <GlassTiltCard style={styles.card}>
       <Text style={styles.title}>Family Connection Dashboard</Text>

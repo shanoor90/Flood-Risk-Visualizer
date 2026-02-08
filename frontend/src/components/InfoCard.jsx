@@ -1,10 +1,33 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import GlassTiltCard from './GlassTiltCard';
+import { locationService, guideService } from '../services/api';
 
 export default function InfoCard({ type }) {
     const isTracking = type === 'tracking';
+    const [data, setData] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchData = async () => {
+            try {
+                if (isTracking) {
+                    const response = await locationService.getHistory("user_123");
+                    setData(response.data[0]); // Show latest location log
+                } else {
+                    const response = await guideService.getGuide();
+                    setData(response.data);
+                }
+            } catch (error) {
+                console.error("InfoCard Fetch Error:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [isTracking]);
+
+    const title = isTracking ? "Last Known Location" : "Offline Survival Guide";
+    const desc = isTracking 
+        ? (data ? `Last seen at ${data.location.lat}, ${data.location.lon}` : "Updating tracking history...")
+        : (data ? `${data.tips.length} Safety Tips Available Offline` : "Emergency information bundle.");
     
     return (
         <GlassTiltCard style={styles.card}>
@@ -17,15 +40,8 @@ export default function InfoCard({ type }) {
                     />
                 </View>
                 <View style={styles.content}>
-                    <Text style={styles.title}>
-                        {isTracking ? "Last Known Location" : "Offline Survival Guide"}
-                    </Text>
-                    <Text style={styles.desc}>
-                        {isTracking 
-                            ? "Periodically saves your last GPS location for family access."
-                            : "First aid tips, emergency contacts & shelter info offline."
-                        }
-                    </Text>
+                    <Text style={styles.title}>{title}</Text>
+                    <Text style={styles.desc}>{loading ? "Loading..." : desc}</Text>
                 </View>
             </View>
         </GlassTiltCard>

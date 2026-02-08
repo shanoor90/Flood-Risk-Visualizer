@@ -14,11 +14,23 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Routes
+const riskRoutes = require('./routes/riskRoutes');
+const sosRoutes = require('./routes/sosRoutes');
+const familyRoutes = require('./routes/familyRoutes');
+const locationRoutes = require('./routes/locationRoutes');
+const guideRoutes = require('./routes/guideRoutes');
+
+app.use('/api/v1/risk', riskRoutes);
+app.use('/api/v1/sos', sosRoutes);
+app.use('/api/v1/family', familyRoutes);
+app.use('/api/v1/location', locationRoutes);
+app.use('/api/v1/guide', guideRoutes);
+
 app.get('/', (req, res) => {
-    res.send('Flood Risk Visualizer Backend is Running with Firebase Support!');
+    res.send('Flood Risk Visualizer Backend is Running with 5 Core Features!');
 });
 
-// Example API to get data from Firebase
+// Deprecated example API - keeping for reference if needed
 app.get('/api/floods', async (req, res) => {
     try {
         if (!db) throw new Error("Database not initialized");
