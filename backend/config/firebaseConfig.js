@@ -1,17 +1,30 @@
 const admin = require("firebase-admin");
-const serviceAccount = require("./serviceAccountKey.json");
+const fs = require("fs");
+const path = require("path");
 
-// Check if serviceAccountKey.json exists before initializing
+const serviceAccountPath = path.join(__dirname, "serviceAccountKey.json");
+
+let db;
+
 try {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    // databaseURL: "https://your-project-id.firebaseio.com" // Optional for Firestore
-  });
-  console.log("Firebase Admin Initialized Successfully");
+  if (fs.existsSync(serviceAccountPath)) {
+    const serviceAccount = require(serviceAccountPath);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+    console.log("Firebase Admin Initialized Successfully");
+    db = admin.firestore();
+  } else {
+    console.warn("⚠️ WARNING: 'serviceAccountKey.json' not found in backend/config.");
+    console.warn("⚠️ Local development will continue without Firestore connectivity.");
+    console.warn("⚠️ Please ask the project lead for the credentials file.");
+    
+    // Provide a mock db or handle null in controllers
+    db = null; 
+  }
 } catch (error) {
   console.error("Error initializing Firebase Admin:", error.message);
-  console.error("Make sure 'serviceAccountKey.json' is present in the backend/config directory.");
+  db = null;
 }
 
-const db = admin.firestore();
 module.exports = { admin, db };
