@@ -1,51 +1,45 @@
+import React from 'react';
+import { StyleSheet, View, ImageBackground, SafeAreaView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ImageBackground, ScrollView, SafeAreaView, Text } from 'react-native';
-import Navbar from './src/components/Navbar';
-import RiskMapCard from './src/components/RiskMapCard';
-import SOSButton from './src/components/SOSButton';
-import FamilyList from './src/components/FamilyList';
-import InfoCard from './src/components/InfoCard';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import DashboardScreen from './src/screens/DashboardScreen';
+import RiskDetailScreen from './src/screens/RiskDetailScreen';
+import SOSScreen from './src/screens/SOSScreen';
+import TrackingScreen from './src/screens/TrackingScreen';
+import FamilyScreen from './src/screens/FamilyScreen';
+import SurvivalGuideScreen from './src/screens/SurvivalGuideScreen';
+
+const Stack = createStackNavigator();
 
 export default function App() {
   return (
-    <ImageBackground 
-      source={{ uri: 'https://images.unsplash.com/photo-1569012871812-f38ee64cd54c?q=80&w=2070&auto=format&fit=crop' }} 
-      style={styles.backgroundImage}
-    >
-      <View style={styles.overlay}>
-        <SafeAreaView style={styles.safeArea}>
-          <Navbar />
-          
-          <ScrollView contentContainerStyle={styles.content}>
-            <View style={styles.intro}>
-                <Text style={styles.greeting}>Hello, User 👋</Text>
-                <Text style={styles.subGreeting}>Stay safe during the floods.</Text>
-            </View>
-
-            {/* 1. SOS Button - High Priority */}
-            <SOSButton />
-
-            {/* 2. Map & Risk */}
-            <RiskMapCard />
-
-            {/* 3. Family */}
-            <FamilyList />
-
-            {/* 4. Grid for Info Cards */}
-            <View style={styles.grid}>
-                <View style={styles.col}>
-                    <InfoCard type="tracking" />
-                </View>
-                <View style={styles.col}>
-                    <InfoCard type="survival" />
-                </View>
-            </View>
-            
-          </ScrollView>
-        </SafeAreaView>
-      </View>
-      <StatusBar style="light" />
-    </ImageBackground>
+    <NavigationContainer>
+      <ImageBackground 
+        source={{ uri: 'https://images.unsplash.com/photo-1569012871812-f38ee64cd54c?q=80&w=2070&auto=format&fit=crop' }} 
+        style={styles.backgroundImage}
+      >
+        <View style={styles.overlay}>
+          <SafeAreaView style={styles.safeArea}>
+            <Stack.Navigator 
+              initialRouteName="Dashboard"
+              screenOptions={{
+                headerShown: false,
+                cardStyle: { backgroundColor: 'transparent' },
+              }}
+            >
+              <Stack.Screen name="Dashboard" component={DashboardScreen} />
+              <Stack.Screen name="RiskDetail" component={RiskDetailScreen} />
+              <Stack.Screen name="SOS" component={SOSScreen} />
+              <Stack.Screen name="Tracking" component={TrackingScreen} />
+              <Stack.Screen name="Family" component={FamilyScreen} />
+              <Stack.Screen name="SurvivalGuide" component={SurvivalGuideScreen} />
+            </Stack.Navigator>
+          </SafeAreaView>
+        </View>
+        <StatusBar style="light" />
+      </ImageBackground>
+    </NavigationContainer>
   );
 }
 

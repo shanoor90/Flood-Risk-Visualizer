@@ -1,12 +1,29 @@
+import React from 'react';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { FontAwesome5 } from '@expo/vector-icons';
+import GlassTiltCard from './GlassTiltCard';
 import * as Location from 'expo-location';
 import { riskService } from '../services/api';
 
-export default function RiskMapCard() {
+export default function RiskMapCard({ onPress }) {
   const [riskData, setRiskData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [errorMsg, setErrorMsg] = React.useState(null);
 
   React.useEffect(() => {
+    const fetchRisk = async (lat, lon) => {
+      try {
+        setLoading(true);
+        const response = await riskService.getRiskData(lat, lon);
+        setRiskData(response.data);
+      } catch (error) {
+        console.error("Error fetching risk data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -19,18 +36,6 @@ export default function RiskMapCard() {
       let location = await Location.getCurrentPositionAsync({});
       fetchRisk(location.coords.latitude, location.coords.longitude);
     })();
-
-    const fetchRisk = async (lat, lon) => {
-      try {
-        setLoading(true);
-        const response = await riskService.getRiskData(lat, lon);
-        setRiskData(response.data);
-      } catch (error) {
-        console.error("Error fetching risk data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
   }, []);
 
   const riskLevel = riskData?.risk?.level || 'LOW';
@@ -39,7 +44,8 @@ export default function RiskMapCard() {
   const lastUpdated = riskData?.risk?.lastUpdated || 'N/A';
 
   return (
-    <GlassTiltCard style={styles.card}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
+      <GlassTiltCard style={styles.card}>
       <View style={styles.header}>
         <Text style={styles.title}>Flood Risk Visualization</Text>
         <Text style={styles.timeTag}>Last Sync: {lastUpdated}</Text>
@@ -66,7 +72,8 @@ export default function RiskMapCard() {
         </View>
         <Text style={[styles.riskStatus, { color: riskColor }]}>{riskLevel} Risk</Text>
       </View>
-    </GlassTiltCard>
+      </GlassTiltCard>
+    </TouchableOpacity>
   );
 }
 

@@ -1,6 +1,10 @@
+import React from 'react';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import GlassTiltCard from './GlassTiltCard';
 import { locationService, guideService } from '../services/api';
 
-export default function InfoCard({ type }) {
+export default function InfoCard({ type, onPress }) {
     const isTracking = type === 'tracking';
     const [data, setData] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
@@ -30,7 +34,8 @@ export default function InfoCard({ type }) {
         : (data ? `${data.tips.length} Safety Tips Available Offline` : "Emergency information bundle.");
     
     return (
-        <GlassTiltCard style={styles.card}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
+      <GlassTiltCard style={styles.card}>
             <View style={styles.row}>
                 <View style={[styles.iconBox, { backgroundColor: isTracking ? '#dbeafe' : '#dcfce7' }]}>
                     <MaterialCommunityIcons 
@@ -45,7 +50,8 @@ export default function InfoCard({ type }) {
                 </View>
             </View>
         </GlassTiltCard>
-    );
+    </TouchableOpacity>
+  );
 }
 
 const styles = StyleSheet.create({

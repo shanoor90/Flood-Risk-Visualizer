@@ -1,3 +1,7 @@
+import React from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import GlassTiltCard from './GlassTiltCard';
 import * as Location from 'expo-location';
 import { sosService } from '../services/api';
 

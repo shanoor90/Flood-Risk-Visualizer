@@ -1,6 +1,9 @@
+import React from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import GlassTiltCard from './GlassTiltCard';
 import { familyService } from '../services/api';
 
-export default function FamilyList() {
+export default function FamilyList({ onPress }) {
   const [familyMembers, setFamilyMembers] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -30,7 +33,8 @@ export default function FamilyList() {
   if (loading) return <Text style={{color: '#fff', textAlign: 'center'}}>Syncing Family Circle...</Text>;
 
   return (
-    <GlassTiltCard style={styles.card}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
+      <GlassTiltCard style={styles.card}>
       <Text style={styles.title}>Family Connection Dashboard</Text>
       
       <View style={styles.list}>
@@ -48,6 +52,7 @@ export default function FamilyList() {
       
       <Text style={styles.footer}>Family Safety Circle Active</Text>
     </GlassTiltCard>
+    </TouchableOpacity>
   );
 }
 
