@@ -20,23 +20,23 @@ export default function TrackingScreen({ navigation }) {
                 <View style={styles.featureList}>
                     <TrackingItem 
                         icon="database-sync" 
-                        title="Periodic GPS Backup" 
-                        desc="Your coordinates are periodically backed up to our secured backend server for recovery if communication is lost." 
+                        title="GPS Backup" 
+                        desc="Periodic GPS location backup to backend server" 
                     />
                     <TrackingItem 
                         icon="timer-flash" 
-                        title="Dynamic Frequency" 
-                        desc="Tracking frequency automatically increases during high-risk conditions or triggered SOS events." 
+                        title="High-Risk Frequency" 
+                        desc="Increased tracking frequency during high-risk conditions" 
                     />
                     <TrackingItem 
                         icon="history" 
-                        title="Temporal Analysis" 
-                        desc="Records detailed timestamps for all location logs, enabling path recovery and temporal analysis." 
+                        title="Temporal Recording" 
+                        desc="Timestamp recording for temporal analysis" 
                     />
                     <TrackingItem 
                         icon="account-group-outline" 
-                        title="Family Oversight" 
-                        desc="Designated safety contacts can access your last known location history if contact is lost." 
+                        title="Family Access" 
+                        desc="Family access to location history if contact is lost" 
                     />
                 </View>
 

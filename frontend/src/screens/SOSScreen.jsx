@@ -20,23 +20,23 @@ export default function SOSScreen({ navigation }) {
                 <View style={styles.featureList}>
                     <FeatureItem 
                         icon="gesture-tap" 
-                        title="One-Touch SOS" 
-                        desc="Instant broadcast of emergency signals to authorities and your safety circle." 
+                        title="SOS Emergency Alerts" 
+                        desc="One-touch SOS button for rapid emergency alerts" 
                     />
                     <FeatureItem 
                         icon="map-marker-radius" 
-                        title="Auto-Capture" 
-                        desc="Automatically captures your precise GPS coordinates, current timestamp, and local risk level." 
+                        title="Automatic Capture" 
+                        desc="Captures location, timestamp, and risk level automatically" 
                     />
                     <FeatureItem 
                         icon="cloud-sync" 
-                        title="Reliable Delivery" 
-                        desc="Secured backend delivery via internet. If connection fails, SMS fallback is triggered." 
+                        title="Backend Delivery" 
+                        desc="Backend alert delivery via internet connection" 
                     />
                     <FeatureItem 
                         icon="message-text-outline" 
                         title="SMS Fallback" 
-                        desc="Automatically sends emergency SMS with your location when data connection is unavailable." 
+                        desc="SMS fallback activated when internet unavailable" 
                     />
                 </View>
 

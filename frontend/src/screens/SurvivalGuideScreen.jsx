@@ -20,23 +20,23 @@ export default function SurvivalGuideScreen({ navigation }) {
                 <View style={styles.gridContainer}>
                     <GuideCard 
                         icon="bandage" 
-                        title="First-Aid Tips" 
-                        desc="Immediate instructions for drowning, hypothermia, and flood-related injuries." 
+                        title="Mobile Bundle" 
+                        desc="Embedded emergency information bundle in mobile app" 
                     />
                     <GuideCard 
                         icon="phone-classic" 
-                        title="Emergency Contacts" 
-                        desc="Quick directory for Navy, Red Cross, and local rescue coordinating centers." 
+                        title="Medical Guidance" 
+                        desc="First-aid instructions and medical guidance" 
                     />
                     <GuideCard 
                         icon="home-city-outline" 
-                        title="Shelter Directory" 
-                        desc="Localized list of safe zones, high-ground shelters, and relief camps." 
+                        title="Emergency Directory" 
+                        desc="Local emergency contact directory and shelter locations" 
                     />
                     <GuideCard 
                         icon="wifi-off" 
-                        title="100% Offline" 
-                        desc="All information is embedded in the app. Accessible without any cellular or data connection." 
+                        title="Internet Offline" 
+                        desc="Fully accessible without internet connectivity" 
                     />
                 </View>
 

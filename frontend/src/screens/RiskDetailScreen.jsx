@@ -63,8 +63,14 @@ export default function RiskDetailScreen({ navigation }) {
                         <Text style={styles.infoTitle}>Sri Lankan Risk Equation:</Text>
                         <Text style={styles.infoText}>Risk = (Rainfall × 0.5) + (Storm × 0.3) + (Humidity × 0.2)</Text>
                         <View style={styles.divider} />
-                        <Text style={[styles.infoText, { fontWeight: 'bold' }]}>
-                            Note: If water level exceeds 2.0m, risk is automatically set to SEVERE.
+                        <Text style={styles.infoTitle}>Risk Level Thresholds:</Text>
+                        <Text style={styles.infoText}>• 0-30: LOW (Green)</Text>
+                        <Text style={styles.infoText}>• 31-55: MODERATE (Yellow)</Text>
+                        <Text style={styles.infoText}>• 56-80: HIGH (Orange)</Text>
+                        <Text style={styles.infoText}>• &gt;80: SEVERE (Red)</Text>
+                        <View style={styles.divider} />
+                        <Text style={[styles.infoText, { fontWeight: 'bold', color: '#b91c1c' }]}>
+                            Note: If water level exceeds 2.0m, the risk is automatically set to SEVERE regardless of the score.
                         </Text>
                     </View>
                 </View>

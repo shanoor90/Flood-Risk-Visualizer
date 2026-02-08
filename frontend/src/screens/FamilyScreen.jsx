@@ -20,22 +20,22 @@ export default function FamilyScreen({ navigation }) {
                 <View style={styles.infoList}>
                     <CardItem 
                         title="Personalized Safety Circle" 
-                        desc="Easily add and manage family members in your personalized Circle of Trust." 
+                        desc="Add family members to personalized Safety Circle" 
                         icon="shield-account" 
                     />
                     <CardItem 
-                        title="Relationship Management" 
-                        desc="Secure backend storage manages complex family relationships and shared safety data." 
+                        title="Family Relationships" 
+                        desc="Backend stores and manages family relationships" 
                         icon="server-network" 
                     />
                     <CardItem 
-                        title="Continuous Monitoring" 
-                        desc="Real-time monitoring of flood risks at the precise location of every family member." 
+                        title="Real-Time Monitoring" 
+                        desc="Continuous flood risk monitoring at each member's location" 
                         icon="radar" 
                     />
                     <CardItem 
-                        title="Automatic Notifications" 
-                        desc="Instant alerts triggered when family members enter designated high-risk flood zones." 
+                        title="Automatic Alerts" 
+                        desc="Automatic notifications when family enters high-risk zones" 
                         icon="bell-ring-outline" 
                     />
                 </View>
