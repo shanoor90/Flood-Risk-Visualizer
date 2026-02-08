@@ -2,39 +2,51 @@
 
 A comprehensive mobile application designed to visualize flood risks, enable rapid emergency SOS alerts, track location history for recovery, and provide offline survival guidance. Built for high-stakes environmental safety using React Native (Expo) and Node.js.
 
-## 🚀 Quick Start for Team Members
+## 🚀 Complete Step-by-Step Setup Guide
 
-To get this project running on your local machine, follow these steps exactly:
+Follow these steps exactly to get the project running on your machine:
 
-### 1. Prerequisites
-- **Node.js**: v18 or higher recommended.
-- **Git**: Installed and configured.
-- **Expo Go App**: Download on your phone if you want to test on a real device.
-
-### 2. Clone the Repository
+### Step 1: Clone and Enter the Project
 ```bash
 git clone https://github.com/shanoor90/Flood-Risk-Visualizer.git
 cd Flood-Risk-Visualizer
 ```
 
-### 3. Backend Setup
-The backend handles the Sri Lankan Flood Risk calculation formula and Firestore data management.
-```bash
-cd backend
-npm install
-# Create a .env file based on .env.example if needed
-npm run dev
-```
-*Port: [http://localhost:5000](http://localhost:5000)*
+### Step 2: Initialize the Backend
+The backend manages the risk calculation engine and database connections.
+1. Open a terminal and navigate to the backend folder:
+   ```bash
+   cd backend
+   ```
+2. Install all necessary dependencies:
+   ```bash
+   npm install
+   ```
+3. Prepare the Environment:
+   - Create a file named `.env` in the `backend` folder.
+   - Copy the content from `.env.example` into your new `.env` file.
+4. **Note on Database**: Contact the project lead to receive the `serviceAccountKey.json` file. Place it inside the `backend/config/` directory (This file is ignored by Git for security).
+5. Start the server:
+   ```bash
+   npm run dev
+   ```
+   *Your backend is now running at `http://localhost:5000`*
 
-### 4. Frontend Setup
-The frontend is built with React Native and includes a Glassmorphism dashboard with full navigation.
-```bash
-cd ../frontend
-npm install
-npm run web
-```
-*Port: [http://localhost:8081](http://localhost:8081)*
+### Step 3: Initialize the Frontend
+1. Open a **NEW second terminal window** (keep the backend terminal running).
+2. Navigate to the frontend folder:
+   ```bash
+   cd frontend
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the application:
+   ```bash
+   npm run web
+   ```
+   *The app will open in your browser at `http://localhost:8081`*
 
 ---
 
