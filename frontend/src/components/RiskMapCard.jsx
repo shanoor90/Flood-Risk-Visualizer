@@ -1,14 +1,29 @@
+import * as Location from 'expo-location';
 import { riskService } from '../services/api';
 
 export default function RiskMapCard() {
   const [riskData, setRiskData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
+  const [errorMsg, setErrorMsg] = React.useState(null);
 
   React.useEffect(() => {
-    // Default to Colombo coordinates for demo
-    const fetchRisk = async () => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        // Fallback to Colombo if permission denied
+        fetchRisk(6.9271, 79.8612);
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      fetchRisk(location.coords.latitude, location.coords.longitude);
+    })();
+
+    const fetchRisk = async (lat, lon) => {
       try {
-        const response = await riskService.getRiskData(6.9271, 79.8612);
+        setLoading(true);
+        const response = await riskService.getRiskData(lat, lon);
         setRiskData(response.data);
       } catch (error) {
         console.error("Error fetching risk data:", error);
@@ -16,7 +31,6 @@ export default function RiskMapCard() {
         setLoading(false);
       }
     };
-    fetchRisk();
   }, []);
 
   const riskLevel = riskData?.risk?.level || 'LOW';

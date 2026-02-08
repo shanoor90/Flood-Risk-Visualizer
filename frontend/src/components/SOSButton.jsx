@@ -1,17 +1,26 @@
+import * as Location from 'expo-location';
 import { sosService } from '../services/api';
 
 export default function SOSButton() {
   const handlePress = async () => {
     try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        let locationData = { lat: 6.9271, lon: 79.8612 }; // Default
+
+        if (status === 'granted') {
+            let userLoc = await Location.getCurrentPositionAsync({});
+            locationData = { lat: userLoc.coords.latitude, lon: userLoc.coords.longitude };
+        }
+
         const sosData = {
-            userId: "user_123", // Placeholder for actual logged in user
-            location: { lat: 6.9271, lon: 79.8612 }, // Placeholder for actual GPS
-            riskLevel: "HIGH",
+            userId: "user_123", 
+            location: locationData,
+            riskLevel: "HIGH", // This could also be dynamically fetched
             riskScore: 65
         };
 
         const response = await sosService.sendSOS(sosData);
-        Alert.alert("SOS SENT", `Your emergency alert has been broadcast. Alert ID: ${response.data.alertId}`);
+        Alert.alert("SOS SENT", `Emergency broadcast successful. ID: ${response.data.alertId}`);
     } catch (error) {
         console.error("SOS Error:", error);
         Alert.alert("SOS FAILED", "Internet unavailable. SMS Fallback activated.");
