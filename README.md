@@ -2,70 +2,30 @@
 
 A comprehensive mobile application designed to visualize flood risks, enable rapid emergency SOS alerts, track location history for recovery, and provide offline survival guidance. Built for high-stakes environmental safety using React Native (Expo) and Node.js.
 
-## 🚀 Complete Step-by-Step Setup Guide
+## 🚀 Quick Start (Complete App)
 
-Follow these steps exactly to get the project running on your machine:
+Run the entire stack with a single command:
 
-### Step 1: Clone and Enter the Project
-**If you don't have the folder yet:**
-```bash
-git clone https://github.com/shanoor90/Flood-Risk-Visualizer.git
-cd Flood-Risk-Visualizer
-```
+1. **Install Dependencies** (First time only):
+   ```bash
+   npm run install:all
+   ```
 
-**If you already have the folder (Error: "destination path already exists"):**
-If you see the error *"destination path already exists"*, it means you already have a folder named `Flood-Risk-Visualizer`. 
-- To get the **latest updates** without cloning again, run:
-  ```bash
-  cd Flood-Risk-Visualizer
-  git pull origin main
-  ```
-- If your folder is **broken/older** and you want a **fresh start**, delete it first:
-  ```bash
-  rm -rf Flood-Risk-Visualizer  # Caution: This deletes your local changes!
-  git clone https://github.com/shanoor90/Flood-Risk-Visualizer.git
-  ```
+2. **Run Everything**:
+   ```bash
+   npm run start:all
+   ```
+   *This will start the Node.js backend and the Expo Metro Bundler simultaneously.*
 
-### Step 2: Initialize the Backend
-The backend manages the risk calculation engine and database connections.
-1. Open a terminal and navigate to the backend folder:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. **Configure IP Address**:
-   - Get your machine's local IP address (run `ipconfig` on Windows).
-   - Ensure you use this IP in the frontend `api.js` if testing on a physical device.
-4. Start the server:
-   ```bash
-   node server.js
-   ```
-   *Your backend is now running at `http://localhost:5000`*
+3. **Open on Mobile**:
+   Scan the QR code in your terminal specifically for **Expo Go**.
 
-### Step 3: Initialize the Frontend
-1. Open a **NEW second terminal window** (keep the backend terminal running).
-2. Navigate to the frontend folder:
-   ```bash
-   cd frontend
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. **Running for Expo Go (Mobile)**:
-   ```bash
-   npx expo start --go
-   ```
-   *Scan the QR code with the Expo Go app on your phone.*
+---
 
-5. **Running for Web**:
-   ```bash
-   npx expo start --web
-   ```
-   *The app will open in your browser.*
+## 📂 Project Structure
+
+- `backend/`: Node.js & Express server handling risk calculations and data.
+- `frontend/`: React Native (Expo) mobile application.
 
 ---
 
@@ -95,17 +55,20 @@ Calculates live risk using localized weather data from Open-Meteo.
 
 ---
 
-## 🤝 How Others Pull & Work
+## 📡 Configuration
 
-If you are a team member and want to contribute:
-1. **Pull the Latest Changes**: Always run `git pull origin main` before starting work.
-2. **Branching**: Create a new branch for your feature: `git checkout -b feature/your-feature-name`.
-3. **Commit**: Keep commits descriptive.
-4. **Push**: `git push origin feature/your-feature-name` and open a Pull Request.
+### Backend IP Address
+If testing on a physical device, ensure the `BASE_URL` in `frontend/src/services/api.js` matches your computer's local IP address.
+Current configuration: `http://10.34.9.167:5000/api/v1`
 
-## 📡 Deployment
-- **Backend**: Deployed (or ready for deployment) to services like Heroku or Render.
-- **Frontend**: Accessible via Expo Go or web build.
+---
+
+## 🤝 Contributing
+
+1. **Pull Latest**: `git pull origin main`
+2. **Branch**: `git checkout -b feature/your-feature-name`
+3. **Commit**: Keep it descriptive.
+4. **Push**: `git push origin feature/your-feature-name`
 
 ---
 *Stay Safe and Stay Connected.*
