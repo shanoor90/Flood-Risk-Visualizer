@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Replace with your machine's IP address if testing on a physical device
-const BASE_URL = 'http://localhost:5000/api/v1';
+const BASE_URL = 'http://10.34.9.167:5000/api/v1';
 
 const api = axios.create({
     baseURL: BASE_URL,
@@ -16,6 +16,7 @@ export const riskService = {
 
 export const sosService = {
     sendSOS: (data) => api.post('/sos', data),
+    triggerSOS: (data) => api.post('/sos/trigger-sos', data),
     getAlerts: () => api.get('/sos'),
 };
 

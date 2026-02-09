@@ -1,0 +1,107 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Colombo",
+                "province": "Western"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            79.82,
+                            6.98
+                        ],
+                        [
+                            79.92,
+                            6.98
+                        ],
+                        [
+                            79.92,
+                            6.88
+                        ],
+                        [
+                            79.82,
+                            6.88
+                        ],
+                        [
+                            79.82,
+                            6.98
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Kandy",
+                "province": "Central"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            80.58,
+                            7.35
+                        ],
+                        [
+                            80.68,
+                            7.35
+                        ],
+                        [
+                            80.68,
+                            7.25
+                        ],
+                        [
+                            80.58,
+                            7.25
+                        ],
+                        [
+                            80.58,
+                            7.35
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Galle",
+                "province": "Southern"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            80.17,
+                            6.08
+                        ],
+                        [
+                            80.27,
+                            6.08
+                        ],
+                        [
+                            80.27,
+                            5.98
+                        ],
+                        [
+                            80.17,
+                            5.98
+                        ],
+                        [
+                            80.17,
+                            6.08
+                        ]
+                    ]
+                ]
+            }
+        }
+    ]
+}

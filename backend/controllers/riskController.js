@@ -12,7 +12,7 @@ exports.getRiskData = async (req, res) => {
         const riskAnalysis = weatherService.calculateRiskScore(weatherData);
 
         res.json({
-            location: { lat, lon },
+            location: { lat: parseFloat(lat), lon: parseFloat(lon) },
             weather: weatherData,
             risk: riskAnalysis,
             timestamp: new Date()

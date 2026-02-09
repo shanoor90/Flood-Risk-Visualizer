@@ -5,6 +5,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import GlassTiltCard from './GlassTiltCard';
 import * as Location from 'expo-location';
 import { riskService } from '../services/api';
+import MapComponent from './MapComponent';
 
 export default function RiskMapCard({ onPress }) {
   const [riskData, setRiskData] = React.useState(null);
@@ -51,11 +52,20 @@ export default function RiskMapCard({ onPress }) {
         <Text style={styles.timeTag}>Last Sync: {lastUpdated}</Text>
       </View>
       
-      <View style={styles.mapPlaceholder}>
-        <FontAwesome5 name="map-marked-alt" size={40} color="rgba(255,255,255,0.8)" />
-        <Text style={styles.mapText}>
-          {loading ? "Fetching data..." : `Live Location: ${riskData?.location?.lat}, ${riskData?.location?.lon}`}
-        </Text>
+      {/* Replaced Placeholder with MapComponent */}
+      <View style={styles.mapContainer}>
+        <MapComponent 
+            location={riskData?.location} 
+            riskLevel={riskLevel} 
+            riskScore={riskScore} 
+        />
+        {!loading && (
+             <View style={styles.overlayTag}>
+                <Text style={styles.mapText}>
+                    {`Lat: ${riskData?.location?.lat?.toFixed(4)}, Lon: ${riskData?.location?.lon?.toFixed(4)}`}
+                </Text>
+             </View>
+        )}
       </View>
 
       <View style={styles.riskBarContainer}>
@@ -98,15 +108,23 @@ const styles = StyleSheet.create({
     color: '#666',
     fontStyle: 'italic',
   },
-  mapPlaceholder: {
-    backgroundColor: 'rgba(0,0,0,0.1)',
-    height: 100,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+  mapContainer: {
+    height: 180, // Increased height for better map visibility
+    borderRadius: 12, // Slightly more rounded
     marginVertical: 8,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  overlayTag: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   mapText: {
     color: '#eee',
