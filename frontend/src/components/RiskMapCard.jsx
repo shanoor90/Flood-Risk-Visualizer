@@ -9,40 +9,87 @@ import MapComponent from './MapComponent';
 
 export default function RiskMapCard({ onPress }) {
   const [riskData, setRiskData] = React.useState(null);
+  const [userLocation, setUserLocation] = React.useState(null); // Local state for immediate map display
   const [loading, setLoading] = React.useState(true);
   const [errorMsg, setErrorMsg] = React.useState(null);
 
   React.useEffect(() => {
+    let isMounted = true;
+
     const fetchRisk = async (lat, lon) => {
       try {
+        if (!isMounted) return;
         setLoading(true);
         const response = await riskService.getRiskData(lat, lon);
-        setRiskData(response.data);
+        if (isMounted) setRiskData(response.data);
       } catch (error) {
         console.error("Error fetching risk data:", error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        // Fallback to Colombo if permission denied
-        fetchRisk(6.9271, 79.8612);
-        return;
-      }
+    const getLocationAndFetch = async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          if (isMounted) setErrorMsg('Permission to access location was denied');
+          const fallback = { lat: 6.9271, lon: 79.8612 };
+          if (isMounted) setUserLocation(fallback);
+          fetchRisk(fallback.lat, fallback.lon); 
+          return;
+        }
 
-      let location = await Location.getCurrentPositionAsync({});
-      fetchRisk(location.coords.latitude, location.coords.longitude);
-    })();
+        // 1. Try to get the last known location for immediate display
+        const lastKnown = await Location.getLastKnownPositionAsync({});
+        if (lastKnown && isMounted) {
+            const loc = { lat: lastKnown.coords.latitude, lon: lastKnown.coords.longitude };
+            setUserLocation(loc);
+            fetchRisk(loc.lat, loc.lon);
+        }
+
+        // 2. Refresh with fresh location (with timeout race)
+        const locationPromise = Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        const timeoutPromise = new Promise((resolve, reject) => 
+            setTimeout(() => reject(new Error("Location timeout")), 5000)
+        );
+
+        try {
+            const location = await Promise.race([locationPromise, timeoutPromise]);
+            if (isMounted && location) {
+                const loc = { lat: location.coords.latitude, lon: location.coords.longitude };
+                setUserLocation(loc); // Update map immediately
+                fetchRisk(loc.lat, loc.lon);
+            }
+        } catch (e) {
+            console.log("Location fetch timed out or failed, using fallback/last known if available.");
+            if (!lastKnown && isMounted) {
+                 const fallback = { lat: 6.9271, lon: 79.8612 };
+                 setUserLocation(fallback);
+                 fetchRisk(fallback.lat, fallback.lon); 
+            }
+        }
+      } catch (err) {
+          console.error("Location Error:", err);
+          const fallback = { lat: 6.9271, lon: 79.8612 };
+          if (isMounted) {
+              setUserLocation(fallback);
+              fetchRisk(fallback.lat, fallback.lon);
+          }
+      }
+    };
+
+    getLocationAndFetch();
+
+    return () => { isMounted = false; };
   }, []);
 
   const riskLevel = riskData?.risk?.level || 'LOW';
   const riskScore = riskData?.risk?.score || 0;
   const riskColor = riskData?.risk?.color || '#4ade80';
   const lastUpdated = riskData?.risk?.lastUpdated || 'N/A';
+
+  const displayLocation = riskData?.location || userLocation;
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
@@ -55,14 +102,14 @@ export default function RiskMapCard({ onPress }) {
       {/* Replaced Placeholder with MapComponent */}
       <View style={styles.mapContainer}>
         <MapComponent 
-            location={riskData?.location} 
+            location={displayLocation} 
             riskLevel={riskLevel} 
             riskScore={riskScore} 
         />
-        {!loading && (
+        {displayLocation && (
              <View style={styles.overlayTag}>
                 <Text style={styles.mapText}>
-                    {`Lat: ${riskData?.location?.lat?.toFixed(4)}, Lon: ${riskData?.location?.lon?.toFixed(4)}`}
+                    {`Lat: ${displayLocation.lat?.toFixed(4)}, Lon: ${displayLocation.lon?.toFixed(4)}`}
                 </Text>
              </View>
         )}

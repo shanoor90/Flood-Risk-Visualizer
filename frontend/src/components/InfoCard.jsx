@@ -46,7 +46,11 @@ export default function InfoCard({ type, onPress }) {
                 </View>
                 <View style={styles.content}>
                     <Text style={styles.title}>{title}</Text>
-                    <Text style={styles.desc}>{loading ? "Loading..." : desc}</Text>
+                    <Text style={styles.desc}>
+                        {loading 
+                            ? (isTracking ? "Locating..." : "Loading Guide...") 
+                            : desc}
+                    </Text>
                 </View>
             </View>
         </GlassTiltCard>
