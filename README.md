@@ -2,23 +2,44 @@
 
 A comprehensive mobile application designed to visualize flood risks, enable rapid emergency SOS alerts, track location history for recovery, and provide offline survival guidance. Built for high-stakes environmental safety using React Native (Expo) and Node.js.
 
-## 🚀 Quick Start (Complete App)
+## 🚀 Getting Started
 
-Run the entire stack with a single command:
+### 1. Prerequisites
+- **Node.js** (v18 or higher recommended)
+- **npm** or **yarn**
+- **Expo Go** app (installed on your iOS or Android device)
 
-1. **Install Dependencies** (First time only):
-   ```bash
-   npm run install:all
-   ```
+### 2. Installation
+From the project root directory, run the following command to install dependencies for all components:
+```bash
+npm run install:all
+```
 
-2. **Run Everything**:
-   ```bash
-   npm run start:all
-   ```
-   *This will start the Node.js backend and the Expo Metro Bundler simultaneously.*
+### 3. Running the Application
 
-3. **Open on Mobile**:
-   Scan the QR code in your terminal specifically for **Expo Go**.
+#### **A. Run Full Stack (Recommended)**
+To start both the backend and frontend simultaneously, use:
+```bash
+npm run start:all
+```
+
+#### **B. Run Components Separately**
+
+**Backend Server (Exposes API):**
+```bash
+cd backend
+npm run dev
+```
+
+**Frontend (Mobile App Bundler):**
+```bash
+cd frontend
+npx expo start --go
+```
+
+### 4. Open on Mobile
+1. Ensure your computer and mobile device are on the **same Wi-Fi network**.
+2. Scan the QR code displayed in your terminal using the **Expo Go** app (Android) or the camera app (iOS).
 
 ---
 
