@@ -32,17 +32,16 @@ The backend manages the risk calculation engine and database connections.
    ```bash
    cd backend
    ```
-2. Install all necessary dependencies:
+2. Install dependencies:
    ```bash
    npm install
    ```
-3. Prepare the Environment:
-   - Create a file named `.env` in the `backend` folder.
-   - Copy the content from `.env.example` into your new `.env` file.
-4. **Note on Database**: Contact the project lead to receive the `serviceAccountKey.json` file. Place it inside the `backend/config/` directory (This file is ignored by Git for security).
-5. Start the server:
+3. **Configure IP Address**:
+   - Get your machine's local IP address (run `ipconfig` on Windows).
+   - Ensure you use this IP in the frontend `api.js` if testing on a physical device.
+4. Start the server:
    ```bash
-   npm run dev
+   node server.js
    ```
    *Your backend is now running at `http://localhost:5000`*
 
@@ -56,11 +55,17 @@ The backend manages the risk calculation engine and database connections.
    ```bash
    npm install
    ```
-4. Start the application:
+4. **Running for Expo Go (Mobile)**:
    ```bash
-   npm run web
+   npx expo start --go
    ```
-   *The app will open in your browser at `http://localhost:8081`*
+   *Scan the QR code with the Expo Go app on your phone.*
+
+5. **Running for Web**:
+   ```bash
+   npx expo start --web
+   ```
+   *The app will open in your browser.*
 
 ---
 
