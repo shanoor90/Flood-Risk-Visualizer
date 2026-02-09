@@ -29,10 +29,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   glassEffect: {
-    padding: 16,
+    // padding: 16, // Moved to gradient
   },
   gradient: {
     width: '100%',
-    height: '100%',
+    // height: '100%', // Removed to allow content to define height
+    padding: 16, // Moved padding here for better control
   },
 });

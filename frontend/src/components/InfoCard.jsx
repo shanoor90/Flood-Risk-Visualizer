@@ -57,7 +57,8 @@ export default function InfoCard({ type, onPress }) {
 const styles = StyleSheet.create({
   card: {
     marginBottom: 12,
-    flex: 1, // Allow equal height in grid
+    marginBottom: 12,
+    // flex: 1, // Removed to allow natural height sizing
   },
   row: {
     flexDirection: 'row',
