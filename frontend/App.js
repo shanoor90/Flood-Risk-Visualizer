@@ -51,33 +51,17 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(240, 249, 255, 0.6)', // Lighter, bluish overlay for day mode feel
+    // UPDATED: Changed opacity from 0.6 to 0.1
+    // This makes the background image visible so the "frosted" effect works.
+    backgroundColor: 'rgba(240, 249, 255, 0.1)', 
   },
   safeArea: {
     flex: 1,
-    marginTop: 30, // Basic safe area spacing
+    marginTop: 30, 
   },
   content: {
     padding: 16,
     paddingBottom: 40,
   },
-  intro: {
-    marginBottom: 16,
-  },
-  greeting: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1e3a8a', // Dark blue
-  },
-  subGreeting: {
-    fontSize: 14,
-    color: '#475569',
-  },
-  grid: {
-    flexDirection: 'column', // Stacked for mobile, could be row for tablet
-    gap: 8,
-  },
-  col: {
-    width: '100%',
-  },
+  // ... keep your other existing styles (intro, greeting, etc.) if you need them
 });
