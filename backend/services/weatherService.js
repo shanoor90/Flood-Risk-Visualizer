@@ -3,39 +3,50 @@ const axios = require('axios');
 class WeatherService {
     constructor() {
         this.baseUrl = 'https://api.open-meteo.com/v1/forecast';
+        this.cache = { data: null, timestamp: 0 };
+        this.CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
     }
 
     async getWeatherData(lat, lon) {
         try {
+            // Check Cache
+            const now = Date.now();
+            if (this.cache.data && (now - this.cache.timestamp < this.CACHE_DURATION)) {
+                console.log("Serving Weather from Cache");
+                return this.cache.data;
+            }
+
             // Using Open-Meteo (No API key required for non-commercial use)
-            // It provides high-resolution data including rainfall, humidity, and elevation
+            // Added 3s timeout to fail fast and use mock data if API is slow
             const response = await axios.get(this.baseUrl, {
                 params: {
                     latitude: lat,
                     longitude: lon,
                     current: 'temperature_2m,relative_humidity_2m,rain,wind_speed_10m',
                     timezone: 'auto'
-                }
+                },
+                timeout: 3000 // 3 seconds timeout
             });
 
-            // Fetch Elevation separately or mock it if not available in this endpoint (Open-Meteo has an elevation API, but simple forecast endpoint returns elevation in metadata sometimes. 
-            // For now, let's use the elevation from the response if available, or fetch from elevation API.
-            // Actually Open-Meteo returns elevation in the main response object, not 'current'.
-            const elevation = response.data.elevation || 10; // Default to 10m if missing
-
+            const elevation = response.data.elevation || 10; 
             const current = response.data.current;
-            return {
+            
+            const weatherData = {
                 temp: current.temperature_2m,
                 humidity: current.relative_humidity_2m,
                 rainfall: current.rain || 0,
-                // Simulate storm intensity based on wind speed (km/h)
                 stormIntensity: Math.min(100, current.wind_speed_10m * 2), 
-                waterLevel: 1.5, // Mock water level as it's not in weather APIs
+                waterLevel: 1.5, 
                 elevation: elevation,
-                time: current.time // Accurate current time from API
+                time: current.time 
             };
+
+            // Update Cache
+            this.cache = { data: weatherData, timestamp: now };
+            
+            return weatherData;
         } catch (error) {
-            console.error("Error fetching weather data from Open-Meteo:", error.message);
+            console.error("Error fetching weather data (using fallback):", error.message);
             return this.getMockData();
         }
     }

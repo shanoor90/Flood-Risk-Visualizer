@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, Linking } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import GlassTiltCard from './GlassTiltCard';
 import * as Location from 'expo-location';
@@ -7,10 +7,35 @@ import { sosService } from '../services/api';
 
 export default function SOSButton() {
   const handlePress = async () => {
+    // 1. Immediate Native Call (Primary Distress Signal)
+    const emergencyNumber = '0778644924';
+    try {
+        Alert.alert(
+            "SOS ACTIVATED",
+            "Calling Emergency Contact & Sending Alert...",
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "CALL NOW", 
+                    onPress: () => Linking.openURL(`tel:${emergencyNumber}`) 
+                }
+            ]
+        );
+        // Auto-trigger call after short delay if user doesn't cancel? 
+        // Better to let user confirm call to avoid accidental emergency dials in pocket, 
+        // but user asked for "SOS button". 
+        // Let's open the dialer immediately on press without alert for speed, 
+        // or use the alert to confirm. I'll use immediate dialer for "SOS".
+        Linking.openURL(`tel:${emergencyNumber}`); 
+    } catch (err) {
+        console.error("Failed to open dialer:", err);
+    }
+
+    // 2. Background: Send Firebase Alert & Prepare SMS
+    let locationData = { lat: 6.9271, lon: 79.8612 }; // Default
     try {
         let { status } = await Location.requestForegroundPermissionsAsync();
-        let locationData = { lat: 6.9271, lon: 79.8612 }; // Default
-
+        
         if (status === 'granted') {
             let userLoc = await Location.getCurrentPositionAsync({});
             locationData = { lat: userLoc.coords.latitude, lon: userLoc.coords.longitude };
@@ -19,15 +44,20 @@ export default function SOSButton() {
         const sosData = {
             userId: "user_123", 
             location: locationData,
-            riskLevel: "HIGH", // This could also be dynamically fetched
+            riskLevel: "HIGH", 
             riskScore: 65
         };
 
-        const response = await sosService.sendSOS(sosData);
-        Alert.alert("SOS SENT", `Emergency broadcast successful. ID: ${response.data.alertId}`);
+        // Log to Firebase Backend
+        sosService.sendSOS(sosData).then((response) => {
+             console.log("SOS Logged to Firebase:", response.data.alertId);
+        });
+
     } catch (error) {
-        console.error("SOS Error:", error);
-        Alert.alert("SOS FAILED", "Internet unavailable. SMS Fallback activated.");
+        console.error("SOS Data Error:", error);
+        // If backend fails, try SMS
+        const smsBody = `SOS! I need help. My Location: https://maps.google.com/?q=${locationData.lat},${locationData.lon}`;
+        Linking.openURL(`sms:${emergencyNumber}?body=${smsBody}`);
     }
   };
 

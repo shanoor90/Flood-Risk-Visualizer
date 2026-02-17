@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Replace with your machine's IP address if testing on a physical device.
 // Run 'ipconfig' (Windows) or 'ifconfig' (Mac/Linux) to find your local IP.
-const BASE_URL = 'http://192.168.8.195:5000/api/v1';
+const BASE_URL = 'http://192.168.34.9:5000/api/v1';
 
 const api = axios.create({
     baseURL: BASE_URL,
