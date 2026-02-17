@@ -1,6 +1,21 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TextInput, 
+  TouchableOpacity, 
+  Alert, 
+  ImageBackground, 
+  SafeAreaView, 
+  Platform,
+  ScrollView,
+  KeyboardAvoidingView
+} from 'react-native';
 import GlassCard from '../components/GlassCard';
+
+// Verify this file exists: frontend/assets/images/login_bg.jpg
+const loginBgImage = require('../../assets/images/login_bg.jpg');
 
 export default function SignupScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -9,7 +24,7 @@ export default function SignupScreen({ navigation }) {
 
   const handleSignup = () => {
     if (username && email && password) {
-      // TODO: Call API to create account
+      // Success: Navigate back to Login
       Alert.alert('Success', 'Account created successfully!', [
         { text: 'OK', onPress: () => navigation.navigate('Login') }
       ]);
@@ -19,67 +34,98 @@ export default function SignupScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <GlassCard style={styles.card} intensity={30}>
-        <View style={styles.contentContainer}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Join FloodGuard today</Text>
+    <ImageBackground source={loginBgImage} style={styles.backgroundImage} resizeMode="cover">
+      <View style={styles.overlay}>
+        <SafeAreaView style={styles.safeArea}>
+          {/* Added KeyboardAvoidingView to prevent keyboard from covering inputs */}
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.container}
+          >
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+              
+              <GlassCard style={styles.card} intensity={30}>
+                <View style={styles.contentContainer}>
+                  <Text style={styles.title}>Create Account</Text>
+                  <Text style={styles.subtitle}>Join FloodGuard for real-time safety.</Text>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Username</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Choose a username"
-              placeholderTextColor="rgba(255,255,255,0.6)"
-              value={username}
-              onChangeText={setUsername}
-            />
-          </View>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Username</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Choose a username"
+                      placeholderTextColor="rgba(255,255,255,0.6)"
+                      value={username}
+                      onChangeText={setUsername}
+                    />
+                  </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              placeholderTextColor="rgba(255,255,255,0.6)"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Email</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your email"
+                      placeholderTextColor="rgba(255,255,255,0.6)"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
+                  </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Create a password"
-              placeholderTextColor="rgba(255,255,255,0.6)"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-          </View>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Password</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Create a password"
+                      placeholderTextColor="rgba(255,255,255,0.6)"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry
+                    />
+                  </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleSignup}>
-            <Text style={styles.buttonText}>Sign Up</Text>
-          </TouchableOpacity>
+                  <TouchableOpacity style={styles.button} onPress={handleSignup}>
+                    <Text style={styles.buttonText}>Sign Up</Text>
+                  </TouchableOpacity>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.linkText}>Login</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </GlassCard>
-    </View>
+                  <View style={styles.footer}>
+                    <Text style={styles.footerText}>Already have an account? </Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                      <Text style={styles.linkText}>Login</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </GlassCard>
+
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 20, 40, 0.4)', 
+    justifyContent: 'center',
+  },
+  safeArea: {
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? 30 : 0, 
+  },
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
   },

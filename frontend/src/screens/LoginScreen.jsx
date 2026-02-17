@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ImageBackground, SafeAreaView, Platform } from 'react-native';
 import GlassCard from '../components/GlassCard';
+
+// --- UPDATED: Changed from .png to .jpg ---
+const loginBgImage = require('../../assets/images/login_bg.jpg');
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    // TODO: Connect to backend auth API here
     if (username && password) {
-      // successful login simulation
       navigation.replace('Dashboard');
     } else {
       Alert.alert('Error', 'Please enter both username and password');
@@ -17,58 +18,77 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <GlassCard style={styles.card} intensity={30}>
-        <View style={styles.contentContainer}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to continue</Text>
+    <ImageBackground source={loginBgImage} style={styles.backgroundImage} resizeMode="cover">
+      <View style={styles.overlay}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.container}>
+            <GlassCard style={styles.card} intensity={30}>
+              <View style={styles.contentContainer}>
+                <Text style={styles.title}>Welcome Back</Text>
+                <Text style={styles.subtitle}>Sign in to continue accessing crucial flood data.</Text>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Username</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your username"
-              placeholderTextColor="rgba(255,255,255,0.6)"
-              value={username}
-              onChangeText={setUsername}
-              autoCapitalize="none"
-            />
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Username</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your username"
+                    placeholderTextColor="rgba(255,255,255,0.6)"
+                    value={username}
+                    onChangeText={setUsername}
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Password</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your password"
+                    placeholderTextColor="rgba(255,255,255,0.6)"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                  />
+                </View>
+
+                <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                  <Text style={styles.buttonText}>Login</Text>
+                </TouchableOpacity>
+
+                <View style={styles.footer}>
+                  <Text style={styles.footerText}>Don't have an account? </Text>
+                  <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                    <Text style={styles.linkText}>Sign Up</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </GlassCard>
           </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              placeholderTextColor="rgba(255,255,255,0.6)"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-          </View>
-
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-              <Text style={styles.linkText}>Sign Up</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </GlassCard>
-    </View>
+        </SafeAreaView>
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 20, 40, 0.4)', 
+    justifyContent: 'center',
+  },
+  safeArea: {
+    flex: 1,
+    paddingTop: Platform.OS === 'android' ? 30 : 0, 
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    // Note: Background image is handled by App.js
   },
   card: {
     width: '100%',
@@ -107,7 +127,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.3)',
   },
   button: {
-    backgroundColor: '#1e3a8a', // Dark blue to match your theme
+    backgroundColor: '#1e3a8a',
     padding: 15,
     borderRadius: 12,
     alignItems: 'center',
@@ -132,7 +152,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
   },
   linkText: {
-    color: '#60a5fa', // Lighter blue for link
+    color: '#60a5fa',
     fontWeight: 'bold',
   },
 });
