@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import DetailLayout from '../components/DetailLayout';
 import { riskService } from '../services/api';
 import * as Location from 'expo-location';
@@ -8,9 +8,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 export default function RiskDetailScreen({ navigation }) {
     const [data, setData] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
+    const [refreshing, setRefreshing] = React.useState(false);
 
-    React.useEffect(() => {
-        (async () => {
+    const fetchData = async () => {
+        try {
             let { status } = await Location.requestForegroundPermissionsAsync();
             let lat = 6.9271, lon = 79.8612; // Default
 
@@ -20,15 +21,23 @@ export default function RiskDetailScreen({ navigation }) {
                 lon = location.coords.longitude;
             }
 
-            try {
-                const response = await riskService.getRiskData(lat, lon);
-                setData(response.data);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        })();
+            const response = await riskService.getRiskData(lat, lon);
+            setData(response.data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchData();
+    }, []);
+
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        fetchData();
     }, []);
 
     const weather = data?.weather;
@@ -41,40 +50,57 @@ export default function RiskDetailScreen({ navigation }) {
             color="#dbeafe" 
             navigation={navigation}
         >
-            {loading ? (
-                <Text>Fetching localized data...</Text>
-            ) : (
-                <View style={styles.container}>
-                    <View style={styles.scoreCard}>
-                        <Text style={styles.scoreHeader}>Current Risk Score</Text>
-                        <Text style={[styles.scoreValue, { color: risk?.color }]}>{risk?.score}</Text>
-                        <Text style={[styles.statusLabel, { backgroundColor: risk?.color }]}>{risk?.level} RISK</Text>
-                    </View>
+            <ScrollView 
+                contentContainerStyle={styles.scrollContainer}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+            >
+                {loading ? (
+                    <Text style={styles.loadingText}>Fetching localized data...</Text>
+                ) : (
+                    <View style={styles.container}>
+                        <View style={styles.headerRow}>
+                            <Text style={styles.lastUpdated}>
+                                Last Updated: {new Date().toLocaleTimeString()}
+                            </Text>
+                            <TouchableOpacity onPress={onRefresh} style={styles.refreshBtn}>
+                                <MaterialCommunityIcons name="refresh" size={16} color="#1e3a8a" />
+                                <Text style={styles.refreshText}>Refresh</Text>
+                            </TouchableOpacity>
+                        </View>
 
-                    <View style={styles.detailGrid}>
-                        <WeatherItem label="Rainfall" value={`${weather?.rainfall} mm`} icon="weather-pouring" />
-                        <WeatherItem label="Temperature" value={`${weather?.temp}°C`} icon="thermometer" />
-                        <WeatherItem label="Water Level" value={`${weather?.waterLevel} m`} icon="waves" />
-                        <WeatherItem label="Storm Intensity" value={`${weather?.stormIntensity}%`} icon="weather-lightning" />
-                        <WeatherItem label="Humidity" value={`${weather?.humidity}%`} icon="water-percent" />
-                    </View>
+                        <View style={styles.scoreCard}>
+                            <Text style={styles.scoreHeader}>Current Risk Score</Text>
+                            <Text style={[styles.scoreValue, { color: risk?.color || '#333' }]}>{risk?.score || 0}</Text>
+                            <Text style={[styles.statusLabel, { backgroundColor: risk?.color || '#999' }]}>{risk?.level || 'UNKNOWN'} RISK</Text>
+                        </View>
 
-                    <View style={styles.infoBox}>
-                        <Text style={styles.infoTitle}>Sri Lankan Risk Equation:</Text>
-                        <Text style={styles.infoText}>Risk = (Rainfall × 0.5) + (Storm × 0.3) + (Humidity × 0.2)</Text>
-                        <View style={styles.divider} />
-                        <Text style={styles.infoTitle}>Risk Level Thresholds:</Text>
-                        <Text style={styles.infoText}>• 0-30: LOW (Green)</Text>
-                        <Text style={styles.infoText}>• 31-55: MODERATE (Yellow)</Text>
-                        <Text style={styles.infoText}>• 56-80: HIGH (Orange)</Text>
-                        <Text style={styles.infoText}>• &gt;80: SEVERE (Red)</Text>
-                        <View style={styles.divider} />
-                        <Text style={[styles.infoText, { fontWeight: 'bold', color: '#b91c1c' }]}>
-                            Note: If water level exceeds 2.0m, the risk is automatically set to SEVERE regardless of the score.
-                        </Text>
+                        <View style={styles.detailGrid}>
+                            <WeatherItem label="Rainfall" value={`${weather?.rainfall || 0} mm`} icon="weather-pouring" />
+                            <WeatherItem label="Temperature" value={`${weather?.temp || 0}°C`} icon="thermometer" />
+                            <WeatherItem label="Water Level" value={`${weather?.waterLevel || 0} m`} icon="waves" />
+                            <WeatherItem label="Storm Intensity" value={`${weather?.stormIntensity || 0}%`} icon="weather-lightning" />
+                            <WeatherItem label="Humidity" value={`${weather?.humidity || 0}%`} icon="water-percent" />
+                        </View>
+
+                        <View style={styles.infoBox}>
+                            <Text style={styles.infoTitle}>Sri Lankan Risk Equation:</Text>
+                            <Text style={styles.infoText}>Risk = (Rainfall × 0.5) + (Storm × 0.3) + (Humidity × 0.2)</Text>
+                            <View style={styles.divider} />
+                            <Text style={styles.infoTitle}>Risk Level Thresholds:</Text>
+                            <Text style={styles.infoText}>• 0-30: LOW (Green)</Text>
+                            <Text style={styles.infoText}>• 31-55: MODERATE (Yellow)</Text>
+                            <Text style={styles.infoText}>• 56-80: HIGH (Orange)</Text>
+                            <Text style={styles.infoText}>• &gt;80: SEVERE (Red)</Text>
+                            <View style={styles.divider} />
+                            <Text style={[styles.infoText, { fontWeight: 'bold', color: '#b91c1c' }]}>
+                                Note: If water level exceeds 2.0m, the risk is automatically set to SEVERE regardless of the score.
+                            </Text>
+                        </View>
                     </View>
-                </View>
-            )}
+                )}
+            </ScrollView>
         </DetailLayout>
     );
 }
@@ -90,9 +116,15 @@ function WeatherItem({ label, value, icon }) {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        gap: 20,
-    },
+    scrollContainer: { flexGrow: 1 },
+    container: { gap: 20, paddingBottom: 20 },
+    loadingText: { textAlign: 'center', marginTop: 20, color: '#666' },
+    
+    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 4 },
+    lastUpdated: { fontSize: 12, color: '#94a3b8' },
+    refreshBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: 8, backgroundColor: '#e2e8f0', borderRadius: 8 },
+    refreshText: { fontSize: 12, fontWeight: 'bold', color: '#1e3a8a' },
+
     scoreCard: {
         backgroundColor: '#fff',
         borderRadius: 16,

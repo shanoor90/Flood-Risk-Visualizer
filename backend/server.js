@@ -15,12 +15,6 @@ app.use(bodyParser.json());
 
 // Routes
 const riskRoutes = require('./routes/riskRoutes');
-const sosRoutes = require('./routes/sosRoutes');
-const familyRoutes = require('./routes/familyRoutes');
-const locationRoutes = require('./routes/locationRoutes');
-const guideRoutes = require('./routes/guideRoutes');
-
-app.use('/api/v1/risk', riskRoutes);
 app.use('/api/v1/sos', sosRoutes);
 app.use('/api/v1/family', familyRoutes);
 app.use('/api/v1/location', locationRoutes);

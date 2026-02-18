@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "882734225809",
+    "project_id": "flood-risk-visualizer-dc2ab",
+    "storage_bucket": "flood-risk-visualizer-dc2ab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:882734225809:android:fbd8b16de98479bbcb6230",
+        "android_client_info": {
+          "package_name": "com.floodrisk.visualizer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB14zSbIPC2q7cMaWZDqYgBKyNGy0_yk-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:882734225809:android:dd441790528cad3acb6230",
+        "android_client_info": {
+          "package_name": "com.project.floodvisualizer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB14zSbIPC2q7cMaWZDqYgBKyNGy0_yk-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

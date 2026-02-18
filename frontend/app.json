@@ -14,7 +14,9 @@
         "android": {
             "adaptiveIcon": {
                 "backgroundColor": "#ffffff"
-            }
+            },
+            "package": "com.project.floodvisualizer",
+            "googleServicesFile": "./google-services.json"
         },
         "web": {}
     }
