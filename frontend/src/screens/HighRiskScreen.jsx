@@ -47,27 +47,27 @@ export default function HighRiskScreen({ navigation }) {
     };
 
     return (
-        <DetailLayout 
-            title="High-Risk Frequency" 
-            icon="speedometer" 
-            color="#ffe4e6" 
+        <DetailLayout
+            title="High-Risk Frequency"
+            icon="speedometer"
+            color="#ffe4e6"
             navigation={navigation}
         >
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.hero}>
                     <Animated.View style={[
-                        styles.iconContainer, 
+                        styles.iconContainer,
                         isHighRisk && { transform: [{ scale: pulseAnim }], backgroundColor: '#fee2e2' }
                     ]}>
-                        <MaterialCommunityIcons 
-                            name="alert-decagram" 
-                            size={60} 
-                            color={isHighRisk ? "#ef4444" : "#94a3b8"} 
+                        <MaterialCommunityIcons
+                            name="alert-decagram"
+                            size={60}
+                            color={isHighRisk ? "#ef4444" : "#94a3b8"}
                         />
                     </Animated.View>
                     <Text style={styles.heroTitle}>Dynamic Tracking System</Text>
                     <View style={[styles.statusBadge, isHighRisk ? styles.activeBadge : styles.inactiveBadge]}>
-                         <Text style={[styles.statusText, isHighRisk ? styles.activeText : styles.inactiveText]}>
+                        <Text style={[styles.statusText, isHighRisk ? styles.activeText : styles.inactiveText]}>
                             {isHighRisk ? "CURRENTLY ACTIVE (1m Interval)" : "NORMAL MODE (15m Interval)"}
                         </Text>
                     </View>
@@ -76,34 +76,34 @@ export default function HighRiskScreen({ navigation }) {
                 <View style={styles.infoSection}>
                     <Text style={styles.sectionHeader}>Why High-Risk Frequency?</Text>
                     <Text style={styles.introText}>
-                        During high-risk flood conditions (e.g., heavy rainfall alerts, rising water levels), 
+                        During high-risk flood conditions (e.g., heavy rainfall alerts, rising water levels, proximity to flood zones),
                         the system automatically increases location update frequency.
                     </Text>
 
-                    <InfoItem 
-                        icon="crosshairs-gps" 
-                        title="Accurate Real-Time Tracking" 
-                        desc="Provides precise location data updates every minute to ensure recent data is always available." 
+                    <InfoItem
+                        icon="crosshairs-gps"
+                        title="More Accurate Real-Time Tracking"
+                        desc="Ensures your location is captured with high precision when it matters most."
                     />
-                    <InfoItem 
-                        icon="run-fast" 
-                        title="Faster Response" 
-                        desc="Enables emergency responders to coordinate faster and more effectively." 
+                    <InfoItem
+                        icon="run-fast"
+                        title="Faster Emergency Response Coordination"
+                        desc="Enables responders to know your exact path and current position without delay."
                     />
-                    <InfoItem 
-                        icon="eye-outline" 
-                        title="Situational Awareness" 
-                        desc="Improved visibility for disaster management authorities." 
+                    <InfoItem
+                        icon="eye-outline"
+                        title="Improved Situational Awareness"
+                        desc="Helping disaster management authorities visualize movements in affected areas."
                     />
-                    <InfoItem 
-                        icon="refresh-auto" 
-                        title="Dynamic Reassessment" 
-                        desc="Automatically adapts interval based on changing environmental conditions." 
+                    <InfoItem
+                        icon="refresh-auto"
+                        title="Dynamic Risk Reassessment"
+                        desc="Frequency logic adapts based on changing environmental conditions on the ground."
                     />
-                    <InfoItem 
-                        icon="battery-charging-high" 
-                        title="Battery Optimization" 
-                        desc="When risks subside, tracking reverts to normal frequency to conserve power." 
+                    <InfoItem
+                        icon="battery-charging-high"
+                        title="Battery Conservation"
+                        desc="When the risk level returns to normal, the system reduces tracking frequency to conserve battery life."
                     />
                 </View>
             </ScrollView>
@@ -126,13 +126,13 @@ function InfoItem({ icon, title, desc }) {
 const styles = StyleSheet.create({
     container: { gap: 24, paddingBottom: 30 },
     hero: { alignItems: 'center', marginVertical: 10 },
-    iconContainer: { 
-        width: 100, height: 100, borderRadius: 50, 
+    iconContainer: {
+        width: 100, height: 100, borderRadius: 50,
         backgroundColor: '#f1f5f9', justifyContent: 'center', alignItems: 'center',
         marginBottom: 16
     },
     heroTitle: { fontSize: 24, fontWeight: 'bold', color: '#881337' },
-    
+
     statusBadge: {
         paddingHorizontal: 16,
         paddingVertical: 6,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     },
     activeBadge: { backgroundColor: '#fef2f2', borderColor: '#ef4444' },
     inactiveBadge: { backgroundColor: '#f8fafc', borderColor: '#cbd5e1' },
-    
+
     statusText: { fontSize: 12, fontWeight: 'bold', letterSpacing: 0.5 },
     activeText: { color: '#ef4444' },
     inactiveText: { color: '#64748b' },

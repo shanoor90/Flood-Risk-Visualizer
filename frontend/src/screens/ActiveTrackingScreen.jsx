@@ -5,10 +5,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function ActiveTrackingScreen({ navigation }) {
     return (
-        <DetailLayout 
-            title="Active Tracking" 
-            icon="satellite-uplink" 
-            color="#ecfdf5" 
+        <DetailLayout
+            title="Active Tracking"
+            icon="satellite-uplink"
+            color="#ecfdf5"
             navigation={navigation}
         >
             <ScrollView contentContainerStyle={styles.container}>
@@ -16,10 +16,10 @@ export default function ActiveTrackingScreen({ navigation }) {
                     <View style={styles.iconContainer}>
                         <MaterialCommunityIcons name="broadcast" size={60} color="#059669" />
                     </View>
-                    <Text style={styles.heroTitle}>Active Tracking</Text>
+                    <Text style={styles.heroTitle}>Active Tracking Status</Text>
                     <View style={styles.statusBadge}>
                         <Text style={styles.statusText}>
-                            Online (15m Interval)
+                            Active Tracking: Online (15m Interval)
                         </Text>
                     </View>
                 </View>
@@ -35,25 +35,25 @@ export default function ActiveTrackingScreen({ navigation }) {
                     </Text>
 
                     <View style={styles.bulletList}>
-                        <InfoItem 
-                            icon="waves" 
-                            title="Flood risk level" 
-                            desc="Increases precision when you enter a high-risk zone." 
+                        <InfoItem
+                            icon="waves"
+                            title="Flood risk level"
+                            desc="Automatically increases precision when high-risk zones are detected."
                         />
-                        <InfoItem 
-                            icon="weather-lightning-rainy" 
-                            title="Weather alerts" 
-                            desc="Responds to real-time meteorological changes." 
+                        <InfoItem
+                            icon="weather-lightning-rainy"
+                            title="Weather alerts"
+                            desc="Responds immediately to severe weather and rainfall warnings."
                         />
-                        <InfoItem 
-                            icon="bullhorn-outline" 
-                            title="Government notifications" 
-                            desc="Syncs with official emergency management directives." 
+                        <InfoItem
+                            icon="bullhorn-outline"
+                            title="Government emergency notifications"
+                            desc="Syncs with official directives and emergency management protocols."
                         />
-                        <InfoItem 
-                            icon="heart-pulse" 
-                            title="User safety status" 
-                            desc="Adapts if an SOS or emergency signal is detected." 
+                        <InfoItem
+                            icon="heart-pulse"
+                            title="User safety status"
+                            desc="Adjusts tracking behavior if an SOS event or distress signal is triggered."
                         />
                     </View>
                 </View>
@@ -77,8 +77,8 @@ function InfoItem({ icon, title, desc }) {
 const styles = StyleSheet.create({
     container: { gap: 24, paddingBottom: 30 },
     hero: { alignItems: 'center', marginVertical: 10 },
-    iconContainer: { 
-        width: 100, height: 100, borderRadius: 50, 
+    iconContainer: {
+        width: 100, height: 100, borderRadius: 50,
         backgroundColor: '#d1fae5', justifyContent: 'center', alignItems: 'center',
         marginBottom: 16
     },

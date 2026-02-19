@@ -5,10 +5,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function FamilyAccessScreen({ navigation }) {
     return (
-        <DetailLayout 
-            title="Family Access" 
-            icon="account-group" 
-            color="#f3e8ff" 
+        <DetailLayout
+            title="Family Access"
+            icon="account-group"
+            color="#f3e8ff"
             navigation={navigation}
         >
             <ScrollView contentContainerStyle={styles.container}>
@@ -22,7 +22,7 @@ export default function FamilyAccessScreen({ navigation }) {
                     </Text>
                 </View>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.manageBtn}
                     onPress={() => navigation.navigate('Family')}
                 >
@@ -31,34 +31,34 @@ export default function FamilyAccessScreen({ navigation }) {
                 </TouchableOpacity>
 
                 <View style={styles.infoSection}>
-                    <Text style={styles.sectionHeader}>Secure Access History</Text>
+                    <Text style={styles.sectionHeader}>How Family Access Works</Text>
                     <Text style={styles.introText}>
                         In the event of communication loss, authorized family members can securely access the user’s recent location history.
                     </Text>
 
                     <View style={styles.bulletList}>
-                        <InfoItem 
-                            icon="heart-check" 
-                            title="Peace of Mind" 
-                            desc="Peace of mind during extreme weather events." 
+                        <InfoItem
+                            icon="heart-check"
+                            title="Peace of Mind"
+                            desc="Stay connected and informed during extreme weather events."
                         />
-                        <InfoItem 
-                            icon="update" 
-                            title="Real-time Updates" 
-                            desc="Real-time updates on a loved one’s safety status." 
+                        <InfoItem
+                            icon="update"
+                            title="Real-time Updates"
+                            desc="Get the latest safety status of your loved ones immediately."
                         />
-                        <InfoItem 
-                            icon="map-marker-distance" 
-                            title="Location Visibility" 
-                            desc="Location visibility for coordination during evacuations." 
+                        <InfoItem
+                            icon="map-marker-distance"
+                            title="Location Visibility"
+                            desc="Essential visibility for coordination during emergency evacuations."
                         />
-                        <InfoItem 
-                            icon="shield-key" 
-                            title="Controlled Access" 
-                            desc="Controlled access with authentication and privacy safeguards." 
+                        <InfoItem
+                            icon="shield-key"
+                            title="Controlled Access"
+                            desc="Secured with authentication and strict privacy safeguards."
                         />
                     </View>
-                    
+
                     <Text style={styles.footerText}>
                         Access permissions are configurable by the user to ensure privacy and data protection.
                     </Text>
@@ -83,8 +83,8 @@ function InfoItem({ icon, title, desc }) {
 const styles = StyleSheet.create({
     container: { gap: 24, paddingBottom: 30 },
     hero: { alignItems: 'center', marginVertical: 10 },
-    iconContainer: { 
-        width: 100, height: 100, borderRadius: 50, 
+    iconContainer: {
+        width: 100, height: 100, borderRadius: 50,
         backgroundColor: '#f3e8ff', justifyContent: 'center', alignItems: 'center',
         marginBottom: 16
     },

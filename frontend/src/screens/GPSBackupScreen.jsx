@@ -49,7 +49,7 @@ export default function GPSBackupScreen({ navigation }) {
                     <MaterialCommunityIcons name="database-sync" size={24} color="#1e3a8a" style={styles.headerIcon} />
                     <Text style={styles.headerTitle}>GPS Backup</Text>
                 </View>
-                <View style={{ width: 40 }} /> 
+                <View style={{ width: 40 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.container}>
@@ -60,12 +60,12 @@ export default function GPSBackupScreen({ navigation }) {
                     </View>
                     <Text style={styles.mainTitle}>Secure GPS Storage</Text>
                     <Text style={styles.heroDesc}>
-                        The system performs periodic GPS location backups to a secure backend server. 
+                        The system performs periodic GPS location backups to a secure backend server.
                     </Text>
                 </View>
 
                 {/* Backup Button */}
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.backupBtn}
                     onPress={performBackup}
                     disabled={backingUp}
@@ -81,26 +81,26 @@ export default function GPSBackupScreen({ navigation }) {
                 {/* Features / Content */}
                 <View style={styles.contentBox}>
                     <Text style={styles.sectionHeader}>System Benefits</Text>
-                    
-                    <BenefitItem 
-                        icon="check-circle-outline" 
-                        text="The latest verified coordinates are stored safely in real time." 
+
+                    <BenefitItem
+                        icon="check-circle-outline"
+                        text="The latest verified coordinates are stored safely in real time."
                     />
-                    <BenefitItem 
-                        icon="wifi-off" 
-                        text="Location data remains accessible even if the device is damaged, offline, or powered off." 
+                    <BenefitItem
+                        icon="wifi-off"
+                        text="Location data remains accessible even if the device is damaged, offline, or powered off."
                     />
-                    <BenefitItem 
-                        icon="ambulance" 
-                        text="Emergency responders can retrieve the user’s last recorded position during a flood event." 
+                    <BenefitItem
+                        icon="ambulance"
+                        text="Emergency responders can retrieve the user’s last recorded position during a flood event."
                     />
-                    <BenefitItem 
-                        icon="chart-timeline-variant" 
-                        text="Historical movement patterns can be analyzed for evacuation tracking and risk mapping." 
+                    <BenefitItem
+                        icon="chart-timeline-variant"
+                        text="Historical movement patterns can be analyzed for evacuation tracking and risk mapping."
                     />
-                    <BenefitItem 
-                        icon="lock-check" 
-                        text="All GPS data is encrypted during transmission to maintain privacy and data security." 
+                    <BenefitItem
+                        icon="lock-check"
+                        text="All GPS data is encrypted during transmission to maintain privacy and data security."
                     />
                 </View>
 

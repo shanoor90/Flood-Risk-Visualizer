@@ -55,36 +55,36 @@ export default function TemporalRecordingScreen({ navigation }) {
             </View>
 
             <View style={styles.infoSection}>
-                <Text style={styles.sectionHeader}>About Temporal Recording</Text>
+                <Text style={styles.sectionHeader}>Why Temporal Recording?</Text>
                 <Text style={styles.introText}>
                     Each recorded location is timestamped to support chronological tracking and flood impact analysis.
                 </Text>
 
                 <View style={styles.bulletList}>
-                    <InfoItem 
-                        icon="timeline-clock-outline" 
-                        title="Movement Reconstruction" 
-                        desc="Reconstruction of movement timelines during emergencies." 
+                    <InfoItem
+                        icon="timeline-clock-outline"
+                        title="Reconstruction of movement timelines"
+                        desc="Allows for precise analysis of paths taken during emergencies."
                     />
-                    <InfoItem 
-                        icon="alert-remove-outline" 
-                        title="Delay Identification" 
-                        desc="Identification of delay patterns in evacuation." 
+                    <InfoItem
+                        icon="alert-remove-outline"
+                        title="Identification of delay patterns"
+                        desc="Helps identify where and why evacuations might be getting stalled."
                     />
-                    <InfoItem 
-                        icon="city-variant-outline" 
-                        title="Urban Planning" 
-                        desc="Post-disaster data analytics for urban flood planning." 
+                    <InfoItem
+                        icon="city-variant-outline"
+                        title="Post-disaster data analytics"
+                        desc="Valuable data for urban flood planning and future prevention."
                     />
-                    <InfoItem 
-                        icon="chart-bell-curve-cumulative" 
-                        title="Risk Correlation" 
-                        desc="Correlation between user movement and flood severity levels." 
+                    <InfoItem
+                        icon="chart-bell-curve-cumulative"
+                        title="Correlation with flood severity"
+                        desc="Links movement patterns directly to the severity of the flood at that time."
                     />
                 </View>
-                
+
                 <Text style={styles.footerText}>
-                    Temporal data supports both immediate response decisions and long-term flood risk research.
+                    Temporal data supports both immediate response decisions and long term flood risk research.
                 </Text>
             </View>
 
@@ -93,10 +93,10 @@ export default function TemporalRecordingScreen({ navigation }) {
     );
 
     return (
-        <DetailLayout 
-            title="Temporal Recording" 
-            icon="clock-time-eight-outline" 
-            color="#e0f2fe" 
+        <DetailLayout
+            title="Temporal Recording"
+            icon="clock-time-eight-outline"
+            color="#e0f2fe"
             navigation={navigation}
         >
             <View style={styles.container}>
@@ -135,8 +135,8 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     headerContainer: { marginBottom: 16 },
     hero: { alignItems: 'center', marginVertical: 10 },
-    iconContainer: { 
-        width: 100, height: 100, borderRadius: 50, 
+    iconContainer: {
+        width: 100, height: 100, borderRadius: 50,
         backgroundColor: '#f0f9ff', justifyContent: 'center', alignItems: 'center',
         marginBottom: 16
     },

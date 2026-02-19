@@ -5,7 +5,7 @@ import { locationService } from '../services/api';
 import * as Location from 'expo-location';
 
 // Mock User ID for now - in real app this comes from Auth Context
-const USER_ID = "test_user_123"; 
+const USER_ID = "test_user_123";
 
 export default function TrackingScreen({ navigation }) {
     const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ export default function TrackingScreen({ navigation }) {
         familyAccess: false,
         activeTracking: true
     });
-    
+
     const trackingIntervalRef = useRef(null);
 
     useEffect(() => {
@@ -50,13 +50,13 @@ export default function TrackingScreen({ navigation }) {
 
     const togglePreference = async (key) => {
         const newPreferences = { ...preferences, [key]: !preferences[key] };
-        setPreferences(newPreferences); 
+        setPreferences(newPreferences);
 
         try {
             await locationService.updatePreferences({ userId: USER_ID, preferences: newPreferences });
         } catch (error) {
             Alert.alert("Error", "Failed to save preference.");
-            setPreferences(preferences); 
+            setPreferences(preferences);
         }
     };
 
@@ -68,7 +68,7 @@ export default function TrackingScreen({ navigation }) {
             setPreferences(prev => ({ ...prev, activeTracking: false }));
             return;
         }
-        const intervalMs = preferences.highRiskFrequency ? 60000 : 900000; 
+        const intervalMs = preferences.highRiskFrequency ? 60000 : 900000;
         updateLocation();
         trackingIntervalRef.current = setInterval(updateLocation, intervalMs);
     };
@@ -86,7 +86,7 @@ export default function TrackingScreen({ navigation }) {
             const payload = {
                 userId: USER_ID,
                 location: { lat: location.coords.latitude, lon: location.coords.longitude },
-                riskScore: 0 
+                riskScore: 0
             };
             await locationService.updateLocation(payload);
             setLastSynced(new Date());
@@ -112,7 +112,7 @@ export default function TrackingScreen({ navigation }) {
                     <MaterialCommunityIcons name="map-marker-path" size={24} color="#1e3a8a" style={styles.headerIcon} />
                     <Text style={styles.headerTitle}>Location Tracking</Text>
                 </View>
-                <View style={{ width: 40 }} /> 
+                <View style={{ width: 40 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.container}>
@@ -131,33 +131,35 @@ export default function TrackingScreen({ navigation }) {
                     <ActivityIndicator size="large" color="#16a34a" style={{ marginTop: 20 }} />
                 ) : (
                     <View style={styles.featureList}>
-                        <TrackingItem 
-                            icon="database-sync" 
-                            title="GPS Backup" 
+                        <TrackingItem
+                            icon="database-sync"
+                            title="GPS Backup"
                             desc="Periodic GPS location backup to backend server"
-                            active={preferences.gpsBackup}
-                            onToggle={() => togglePreference('gpsBackup')}
+                            onPress={() => navigation.navigate('GPSBackup')}
                         />
-                        <TrackingItem 
-                            icon="help-circle-outline" 
-                            title="High-Risk Frequency" 
+                        <TrackingItem
+                            icon="alert-decagram-outline"
+                            title="High-Risk Frequency"
                             desc="Increased tracking frequency during high-risk conditions"
-                            active={preferences.highRiskFrequency}
-                            onToggle={() => togglePreference('highRiskFrequency')}
+                            onPress={() => navigation.navigate('HighRisk')}
                         />
-                        <TrackingItem 
-                            icon="history" 
-                            title="Temporal Recording" 
+                        <TrackingItem
+                            icon="history"
+                            title="Temporal Recording"
                             desc="Timestamp recording for temporal analysis"
-                            active={preferences.temporalRecording}
-                            onToggle={() => togglePreference('temporalRecording')}
+                            onPress={() => navigation.navigate('TemporalRecording')}
                         />
-                        <TrackingItem 
-                            icon="account-group-outline" 
-                            title="Family Access" 
+                        <TrackingItem
+                            icon="account-group-outline"
+                            title="Family Access"
                             desc="Family access to location history if contact is lost"
-                            active={preferences.familyAccess}
-                            onToggle={() => togglePreference('familyAccess')}
+                            onPress={() => navigation.navigate('FamilyAccess')}
+                        />
+                        <TrackingItem
+                            icon="map-marker-distance"
+                            title="Active Tracking"
+                            desc="Real-time location sharing and tracking status"
+                            onPress={() => navigation.navigate('ActiveTracking')}
                         />
                     </View>
                 )}
@@ -172,9 +174,9 @@ export default function TrackingScreen({ navigation }) {
     );
 }
 
-function TrackingItem({ icon, title, desc, active, onToggle }) {
+function TrackingItem({ icon, title, desc, onPress }) {
     return (
-        <TouchableOpacity style={styles.item} onPress={onToggle}>
+        <TouchableOpacity style={styles.item} onPress={onPress}>
             <View style={styles.iconBox}>
                 <MaterialCommunityIcons name={icon} size={30} color="#16a34a" />
             </View>
@@ -182,6 +184,7 @@ function TrackingItem({ icon, title, desc, active, onToggle }) {
                 <Text style={styles.itemTitle}>{title}</Text>
                 <Text style={styles.itemDesc}>{desc}</Text>
             </View>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#94a3b8" />
         </TouchableOpacity>
     );
 }

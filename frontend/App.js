@@ -46,6 +46,10 @@ import MobileBundleScreen from './src/screens/MobileBundleScreen';
 import MedicalGuidanceScreen from './src/screens/MedicalGuidanceScreen';
 import EmergencyDirectoryScreen from './src/screens/EmergencyDirectoryScreen';
 import OfflineModeScreen from './src/screens/OfflineModeScreen';
+import SafetyCircleScreen from './src/screens/SafetyCircleScreen';
+import FamilyRelationshipsScreen from './src/screens/FamilyRelationshipsScreen';
+import RealTimeMonitoringScreen from './src/screens/RealTimeMonitoringScreen';
+import AutomaticAlertsScreen from './src/screens/AutomaticAlertsScreen';
 
 const Stack = createStackNavigator();
 
@@ -57,11 +61,11 @@ export default function App() {
   return (
     <NavigationContainer>
       <View style={{ flex: 1, backgroundColor: '#121212' }}>
-        <Stack.Navigator 
+        <Stack.Navigator
           initialRouteName="Login"
           screenOptions={{
             headerShown: false,
-            cardStyle: { backgroundColor: 'transparent' }, 
+            cardStyle: { backgroundColor: 'transparent' },
           }}
         >
           {/* Auth Screens */}
@@ -84,6 +88,10 @@ export default function App() {
           <Stack.Screen name="MedicalGuidance" component={MedicalGuidanceScreen} />
           <Stack.Screen name="EmergencyDirectory" component={EmergencyDirectoryScreen} />
           <Stack.Screen name="OfflineMode" component={OfflineModeScreen} />
+          <Stack.Screen name="SafetyCircle" component={SafetyCircleScreen} />
+          <Stack.Screen name="FamilyRelationships" component={FamilyRelationshipsScreen} />
+          <Stack.Screen name="RealTimeMonitoring" component={RealTimeMonitoringScreen} />
+          <Stack.Screen name="AutomaticAlerts" component={AutomaticAlertsScreen} />
         </Stack.Navigator>
       </View>
       <StatusBar style="light" />
