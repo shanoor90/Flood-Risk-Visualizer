@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, Switch, TouchableOpacity, Alert, ActivityIndicator, AppState } from 'react-native';
-import DetailLayout from '../components/DetailLayout';
+import { StyleSheet, View, Text, Switch, TouchableOpacity, Alert, ActivityIndicator, SafeAreaView, Platform, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { locationService } from '../services/api';
 import * as Location from 'expo-location';
@@ -19,7 +18,6 @@ export default function TrackingScreen({ navigation }) {
         activeTracking: true
     });
     
-    // Refs to manage intervals without re-triggering effects excessively
     const trackingIntervalRef = useRef(null);
 
     useEffect(() => {
@@ -27,7 +25,6 @@ export default function TrackingScreen({ navigation }) {
         return () => stopTracking(); // Cleanup on unmount
     }, []);
 
-    // Effect to manage tracking based on preferences
     useEffect(() => {
         if (!loading) {
             if (preferences.activeTracking) {
@@ -42,7 +39,6 @@ export default function TrackingScreen({ navigation }) {
         try {
             const response = await locationService.getPreferences(USER_ID);
             if (response.data) {
-                // Merge with defaults to ensure all keys exist
                 setPreferences(prev => ({ ...prev, ...response.data }));
             }
         } catch (error) {
@@ -54,38 +50,26 @@ export default function TrackingScreen({ navigation }) {
 
     const togglePreference = async (key) => {
         const newPreferences = { ...preferences, [key]: !preferences[key] };
-        setPreferences(newPreferences); // Optimistic update
+        setPreferences(newPreferences); 
 
         try {
             await locationService.updatePreferences({ userId: USER_ID, preferences: newPreferences });
         } catch (error) {
-            Alert.alert("Error", "Failed to save preference. Please try again.");
-            setPreferences(preferences); // Revert on failure
+            Alert.alert("Error", "Failed to save preference.");
+            setPreferences(preferences); 
         }
     };
 
     const startTracking = async () => {
-        // 1. Stop existing to reset
         stopTracking();
-
-        // 2. Request Permissions
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
             Alert.alert("Permission Denied", "Location tracking requires permission.");
             setPreferences(prev => ({ ...prev, activeTracking: false }));
             return;
         }
-
-        // 3. Determine Interval
-        // Normal: 15 mins (900000ms), High Risk: 1 min (60000ms) for demo/emergency
         const intervalMs = preferences.highRiskFrequency ? 60000 : 900000; 
-
-        console.log(`Starting tracking... Interval: ${intervalMs}ms`);
-
-        // 4. Initial immediate update
         updateLocation();
-
-        // 5. Start Loop
         trackingIntervalRef.current = setInterval(updateLocation, intervalMs);
     };
 
@@ -101,16 +85,11 @@ export default function TrackingScreen({ navigation }) {
             const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
             const payload = {
                 userId: USER_ID,
-                location: {
-                    lat: location.coords.latitude,
-                    lon: location.coords.longitude
-                },
-                riskScore: 0 // Ideally fetched from risk service
+                location: { lat: location.coords.latitude, lon: location.coords.longitude },
+                riskScore: 0 
             };
-
             await locationService.updateLocation(payload);
             setLastSynced(new Date());
-            console.log("Location synced:", payload.location);
         } catch (error) {
             console.log("Error syncing location:", error);
         }
@@ -119,24 +98,29 @@ export default function TrackingScreen({ navigation }) {
     const getStatusText = () => {
         if (!preferences.activeTracking) return 'Offline';
         const interval = preferences.highRiskFrequency ? '1m' : '15m';
-        const riskLabel = preferences.highRiskFrequency ? ' - HIGH RISK' : '';
-        return `Online (${interval} Interval${riskLabel})`;
+        return `Active Tracking: Online (${interval} Interval)`;
     };
 
     return (
-        <DetailLayout 
-            title="Location Tracking" 
-            icon="map-marker-path" 
-            color="#dcfce7" 
-            navigation={navigation}
-        >
-            <View style={styles.container}>
-                <View style={styles.heroSection}>
-                    <MaterialCommunityIcons 
-                        name={preferences.activeTracking ? "satellite-uplink" : "satellite-variant"} 
-                        size={80} 
-                        color={preferences.activeTracking ? "#16a34a" : "#94a3b8"} 
-                    />
+        <SafeAreaView style={styles.safeArea}>
+            {/* Custom Header */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <MaterialCommunityIcons name="chevron-left" size={32} color="#1e3a8a" />
+                </TouchableOpacity>
+                <View style={styles.headerTitleContainer}>
+                    <MaterialCommunityIcons name="map-marker-path" size={24} color="#1e3a8a" style={styles.headerIcon} />
+                    <Text style={styles.headerTitle}>Location Tracking</Text>
+                </View>
+                <View style={{ width: 40 }} /> 
+            </View>
+
+            <ScrollView contentContainerStyle={styles.container}>
+                {/* Hero Section */}
+                <View style={styles.hero}>
+                    <View style={styles.satelliteContainer}>
+                        <MaterialCommunityIcons name="satellite-variant" size={100} color="#16a34a" />
+                    </View>
                     <Text style={styles.heroTitle}>Last Known Location Tracking</Text>
                     {lastSynced && (
                         <Text style={styles.lastSynced}>Last Synced: {lastSynced.toLocaleTimeString()}</Text>
@@ -144,7 +128,7 @@ export default function TrackingScreen({ navigation }) {
                 </View>
 
                 {loading ? (
-                    <ActivityIndicator size="large" color="#16a34a" />
+                    <ActivityIndicator size="large" color="#16a34a" style={{ marginTop: 20 }} />
                 ) : (
                     <View style={styles.featureList}>
                         <TrackingItem 
@@ -153,15 +137,13 @@ export default function TrackingScreen({ navigation }) {
                             desc="Periodic GPS location backup to backend server"
                             active={preferences.gpsBackup}
                             onToggle={() => togglePreference('gpsBackup')}
-                            onPress={() => navigation.navigate('GPSBackup')}
                         />
                         <TrackingItem 
-                            icon="alert-decagram" 
+                            icon="help-circle-outline" 
                             title="High-Risk Frequency" 
-                            desc="Increases update frequency to 1 min during emergencies"
+                            desc="Increased tracking frequency during high-risk conditions"
                             active={preferences.highRiskFrequency}
                             onToggle={() => togglePreference('highRiskFrequency')}
-                            onPress={() => navigation.navigate('HighRisk')}
                         />
                         <TrackingItem 
                             icon="history" 
@@ -169,7 +151,6 @@ export default function TrackingScreen({ navigation }) {
                             desc="Timestamp recording for temporal analysis"
                             active={preferences.temporalRecording}
                             onToggle={() => togglePreference('temporalRecording')}
-                            onPress={() => navigation.navigate('TemporalRecording')}
                         />
                         <TrackingItem 
                             icon="account-group-outline" 
@@ -177,95 +158,144 @@ export default function TrackingScreen({ navigation }) {
                             desc="Family access to location history if contact is lost"
                             active={preferences.familyAccess}
                             onToggle={() => togglePreference('familyAccess')}
-                            onPress={() => navigation.navigate('FamilyAccess')}
                         />
                     </View>
                 )}
 
-                <TouchableOpacity 
-                    style={styles.statusBox}
-                    onPress={() => navigation.navigate('ActiveTracking')}
-                    activeOpacity={0.8}
-                >
-                    <View style={styles.statusInfo}>
-                        <View style={[
-                            styles.statusIndicator, 
-                            { backgroundColor: preferences.activeTracking ? '#16a34a' : '#ef4444' }
-                        ]} />
-                        <View>
-                            <Text style={styles.statusLabel}>Active Tracking</Text>
-                            <Text style={styles.statusText}>{getStatusText()}</Text>
-                        </View>
-                    </View>
-                    <Switch 
-                        value={preferences.activeTracking}
-                        onValueChange={() => togglePreference('activeTracking')}
-                        trackColor={{ false: "#767577", true: "#dcfce7" }}
-                        thumbColor={preferences.activeTracking ? "#16a34a" : "#f4f3f4"}
-                    />
-                </TouchableOpacity>
-            </View>
-        </DetailLayout>
+                {/* Status Bar */}
+                <View style={styles.statusBar}>
+                    <View style={styles.statusDot} />
+                    <Text style={styles.statusText}>{getStatusText()}</Text>
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
-function TrackingItem({ icon, title, desc, active, onToggle, onPress }) {
+function TrackingItem({ icon, title, desc, active, onToggle }) {
     return (
-        <TouchableOpacity style={[styles.item, active && styles.itemActive]} onPress={onPress || onToggle}>
-            <MaterialCommunityIcons name={icon} size={28} color={active ? "#16a34a" : "#94a3b8"} />
-            <View style={styles.textWrap}>
-                <Text style={[styles.itemTitle, active && styles.textActive]}>{title}</Text>
+        <TouchableOpacity style={styles.item} onPress={onToggle}>
+            <View style={styles.iconBox}>
+                <MaterialCommunityIcons name={icon} size={30} color="#16a34a" />
+            </View>
+            <View style={styles.itemContent}>
+                <Text style={styles.itemTitle}>{title}</Text>
                 <Text style={styles.itemDesc}>{desc}</Text>
             </View>
-            <Switch 
-                value={active}
-                onValueChange={onToggle}
-                trackColor={{ false: "#e2e8f0", true: "#dcfce7" }}
-                thumbColor={active ? "#16a34a" : "#f4f3f4"}
-            />
         </TouchableOpacity>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { gap: 24 },
-    heroSection: { alignItems: 'center', paddingVertical: 10 },
-    heroTitle: { fontSize: 20, fontWeight: 'bold', color: '#16a34a', marginTop: 10 },
-    featureList: { gap: 15 },
-    item: { 
-        flexDirection: 'row', 
-        gap: 15, 
-        alignItems: 'center',
-        padding: 12,
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: 'transparent'
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#e8f5e9', // Light green theme as per screenshot
+        paddingTop: Platform.OS === 'android' ? 30 : 0,
     },
-    itemActive: {
-        borderColor: '#16a34a',
-        backgroundColor: '#f0fdf4'
-    },
-    textWrap: { flex: 1 },
-    itemTitle: { fontSize: 16, fontWeight: 'bold', color: '#64748b' },
-    textActive: { color: '#16a34a' },
-    itemDesc: { fontSize: 13, color: '#94a3b8', lineHeight: 18 },
-    lastSynced: { fontSize: 12, color: '#16a34a', marginTop: 4, fontStyle: 'italic' },
-    statusBox: {
-        backgroundColor: '#fff',
-        padding: 16,
-        borderRadius: 12,
+    header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        elevation: 2,
+        paddingHorizontal: 8,
+        paddingVertical: 12,
+        backgroundColor: '#e8f5e9',
     },
-    statusInfo: {
+    backButton: {
+        padding: 4,
+    },
+    headerTitleContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
     },
-    statusIndicator: { width: 12, height: 12, borderRadius: 6 },
-    statusLabel: { fontSize: 12, color: '#64748b', fontWeight: 'bold' },
-    statusText: { fontSize: 14, color: '#1e3a8a', fontWeight: 'bold' },
+    headerIcon: {
+        marginRight: 8,
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#1e3a8a',
+    },
+    container: {
+        padding: 20,
+        paddingBottom: 40,
+        alignItems: 'center',
+    },
+    hero: {
+        alignItems: 'center',
+        marginBottom: 30,
+    },
+    satelliteContainer: {
+        width: 120,
+        height: 120,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    heroTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#16a34a',
+        marginTop: 10,
+        textAlign: 'center',
+    },
+    lastSynced: {
+        fontSize: 12,
+        color: '#16a34a',
+        marginTop: 4,
+        fontStyle: 'italic',
+    },
+    featureList: {
+        width: '100%',
+        gap: 16,
+    },
+    item: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 8,
+        width: '100%',
+    },
+    iconBox: {
+        padding: 10,
+        marginRight: 10,
+    },
+    itemContent: {
+        flex: 1,
+    },
+    itemTitle: {
+        fontSize: 17,
+        fontWeight: 'bold',
+        color: '#1e3a8a',
+        marginBottom: 2,
+    },
+    itemDesc: {
+        fontSize: 13,
+        color: '#64748b',
+        lineHeight: 18,
+    },
+    statusBar: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 30,
+        width: '100%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    statusDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#22c55e',
+        marginRight: 12,
+    },
+    statusText: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#1e3a8a',
+    },
 });

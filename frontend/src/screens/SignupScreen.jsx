@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView
 } from 'react-native';
 import GlassCard from '../components/GlassCard';
+import { authService } from '../services/authService';
 
 // Verify this file exists: frontend/assets/images/login_bg.jpg
 const loginBgImage = require('../../assets/images/login_bg.jpg');
@@ -21,13 +22,21 @@ export default function SignupScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     if (username && email && password) {
-      // Success: Navigate back to Login
-      Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => navigation.navigate('Login') }
-      ]);
+      setLoading(true);
+      try {
+        await authService.signup(email, password, username);
+        setLoading(false);
+        Alert.alert('Success', 'Account created successfully!', [
+          { text: 'OK', onPress: () => navigation.navigate('Login') }
+        ]);
+      } catch (error) {
+        setLoading(false);
+        Alert.alert('Signup Error', error.message);
+      }
     } else {
       Alert.alert('Error', 'Please fill in all fields');
     }
@@ -85,8 +94,12 @@ export default function SignupScreen({ navigation }) {
                     />
                   </View>
 
-                  <TouchableOpacity style={styles.button} onPress={handleSignup}>
-                    <Text style={styles.buttonText}>Sign Up</Text>
+                  <TouchableOpacity 
+                    style={[styles.button, loading && styles.buttonDisabled]} 
+                    onPress={handleSignup}
+                    disabled={loading}
+                  >
+                    <Text style={styles.buttonText}>{loading ? 'Creating account...' : 'Sign Up'}</Text>
                   </TouchableOpacity>
 
                   <View style={styles.footer}>
@@ -181,6 +194,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  buttonDisabled: {
+    backgroundColor: '#60a5fa',
+    opacity: 0.7,
   },
   footer: {
     flexDirection: 'row',

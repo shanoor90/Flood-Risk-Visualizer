@@ -1,11 +1,4 @@
-// This file re-exports the initialized firebase instances
-// so they can be imported from '../services/firebase' used in other components.
+// services/firebase.js - Re-exports Firebase services for use in components
+// Usage: import { auth, db, storage } from '../services/firebase';
 
-import { db, database } from '../../firebaseConfig';
-
-export { db, database };
-
-export const mockData = {
-   risk: "High",
-   waterLevel: "12ft"
-};
+export { auth, db, storage } from '../firebase';

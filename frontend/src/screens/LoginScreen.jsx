@@ -5,15 +5,26 @@ import GlassCard from '../components/GlassCard';
 // --- UPDATED: Changed from .png to .jpg ---
 const loginBgImage = require('../../assets/images/login_bg.jpg');
 
-export default function LoginScreen({ navigation }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+import { authService } from '../services/authService';
 
-  const handleLogin = () => {
-    if (username && password) {
-      navigation.replace('Dashboard');
+export default function LoginScreen({ navigation }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (email && password) {
+      setLoading(true);
+      try {
+        await authService.login(email, password);
+        setLoading(false);
+        navigation.replace('Dashboard');
+      } catch (error) {
+        setLoading(false);
+        Alert.alert('Login Error', error.message);
+      }
     } else {
-      Alert.alert('Error', 'Please enter both username and password');
+      Alert.alert('Error', 'Please enter both email and password');
     }
   };
 
@@ -28,14 +39,15 @@ export default function LoginScreen({ navigation }) {
                 <Text style={styles.subtitle}>Sign in to continue accessing crucial flood data.</Text>
 
                 <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Username</Text>
+                  <Text style={styles.label}>Email</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="Enter your username"
+                    placeholder="Enter your email"
                     placeholderTextColor="rgba(255,255,255,0.6)"
-                    value={username}
-                    onChangeText={setUsername}
+                    value={email}
+                    onChangeText={setEmail}
                     autoCapitalize="none"
+                    keyboardType="email-address"
                   />
                 </View>
 
@@ -51,8 +63,12 @@ export default function LoginScreen({ navigation }) {
                   />
                 </View>
 
-                <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                  <Text style={styles.buttonText}>Login</Text>
+                <TouchableOpacity 
+                  style={[styles.button, loading && styles.buttonDisabled]} 
+                  onPress={handleLogin}
+                  disabled={loading}
+                >
+                  <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Login'}</Text>
                 </TouchableOpacity>
 
                 <View style={styles.footer}>
@@ -142,6 +158,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  buttonDisabled: {
+    backgroundColor: '#60a5fa',
+    opacity: 0.7,
   },
   footer: {
     flexDirection: 'row',

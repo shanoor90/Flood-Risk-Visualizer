@@ -1,16 +1,36 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import './firebaseConfig'; // Initialize Firebase
+import { auth, db, storage } from './src/firebase';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+
+// 🔥 Firebase Connection Test
+const testFirebaseConnection = async () => {
+  console.log('🔥 Testing Firebase connection...');
+  try {
+    // ✅ Test 1: Auth
+    console.log('🔐 Auth:', auth ? '✅ Connected' : '❌ Failed');
+
+    // ✅ Test 2: Firestore - write & read
+    const testRef = doc(db, '_connection_test', 'ping');
+    await setDoc(testRef, { status: 'ok', time: serverTimestamp() });
+    const snap = await getDoc(testRef);
+    console.log('📦 Firestore:', snap.exists() ? '✅ Connected' : '❌ Failed');
+
+    // ✅ Test 3: Storage
+    console.log('☁️ Storage:', storage ? '✅ Connected' : '❌ Failed');
+
+    console.log('🎉 All Firebase services connected!');
+  } catch (error) {
+    console.error('❌ Firebase connection error:', error.message);
+  }
+};
 
 // --- Screen Imports ---
-// Make sure these files exist from your previous work
 import LoginScreen from './src/screens/LoginScreen';
 import SignupScreen from './src/screens/SignupScreen';
-
-// Existing Screens
 import DashboardScreen from './src/screens/DashboardScreen';
 import RiskDetailScreen from './src/screens/RiskDetailScreen';
 import SOSScreen from './src/screens/SOSScreen';
@@ -30,21 +50,21 @@ import OfflineModeScreen from './src/screens/OfflineModeScreen';
 const Stack = createStackNavigator();
 
 export default function App() {
+  useEffect(() => {
+    testFirebaseConnection();
+  }, []);
+
   return (
     <NavigationContainer>
-      {/* We use a dark base background (#121212) here.
-        This prevents white flashes during screen transitions.
-      */}
       <View style={{ flex: 1, backgroundColor: '#121212' }}>
         <Stack.Navigator 
           initialRouteName="Login"
           screenOptions={{
             headerShown: false,
-            // crucial: keeps screen backgrounds transparent so individual screen images show through
             cardStyle: { backgroundColor: 'transparent' }, 
           }}
         >
-          {/* New Auth Screens */}
+          {/* Auth Screens */}
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={SignupScreen} />
 

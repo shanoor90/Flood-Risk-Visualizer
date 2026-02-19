@@ -1,29 +1,35 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function Navbar() {
   return (
-    <View style={styles.navbar}>
-      <Text style={styles.logo}>FloodVis</Text>
-      {/* Add menu icons here later */}
+    <View style={styles.container}>
+      <TouchableOpacity>
+        <Ionicons name="menu" size={24} color="#1e3a8a" />
+      </TouchableOpacity>
+      <Text style={styles.title}>FloodRisk</Text>
+      <TouchableOpacity>
+        <Ionicons name="person-circle-outline" size={24} color="#1e3a8a" />
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  navbar: {
-    height: 60,
+  container: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    // Glassmorphism could be applied here too
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    paddingVertical: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 12,
+    marginBottom: 10,
   },
-  logo: {
-    fontSize: 20,
+  title: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#1e3a8a',
   },
 });
