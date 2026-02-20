@@ -21,6 +21,7 @@ export default function RiskDetailScreen({ navigation }) {
             }
 
             const response = await riskService.getRiskData(lat, lon);
+            console.log("Risk Data Response:", response.data);
             setData(response.data);
         } catch (err) {
             console.error("Risk Fetch Error:", err);

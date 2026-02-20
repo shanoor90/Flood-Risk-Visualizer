@@ -16,7 +16,20 @@ exports.addFamilyMember = async (req, res) => {
                     memberId,
                     memberName,
                     relation,
+                    phoneNumber: req.body.phoneNumber || "",
                     addedAt: new Date()
+                });
+
+                // Initialize their location/status so they appear immediately
+                // In a real app, this would wait for their phone to report location.
+                // For this demo, we initialize it to a "Home" location (e.g. Colombo)
+                await db.collection('locations').add({
+                    userId: memberId,
+                    location: { lat: 6.9271 + (Math.random() * 0.05 - 0.025), lon: 79.8612 + (Math.random() * 0.05 - 0.025) }, // Around Colombo
+                    riskScore: 10, // Default Safe
+                    batteryLevel: 95,
+                    gpsStatus: "Active",
+                    timestamp: admin.firestore.FieldValue.serverTimestamp()
                 });
             } catch (dbError) {
                 console.warn("[BACKEND] Firestore error adding member, using mock success:", dbError.message);
@@ -73,7 +86,14 @@ exports.getFamilyRisk = async (req, res) => {
                             .get();
             
                         if (!locSnapshot.empty) {
-                            location = locSnapshot.docs[0].data().location;
+                            const data = locSnapshot.docs[0].data();
+                            location = data.location;
+                            
+                            // Use real data from Firestore, default to reasonable fallbacks if missing
+                            location.batteryLevel = data.batteryLevel ?? 100;
+                            location.gpsStatus = data.gpsStatus || "Active";
+                            location.lastSeen = data.timestamp?.toDate() || new Date();
+
                             const weatherData = await weatherService.getWeatherData(location.lat, location.lon);
                             risk = weatherService.calculateRiskScore(weatherData);
                         }
@@ -85,32 +105,26 @@ exports.getFamilyRisk = async (req, res) => {
                         memberId: doc.id,
                         memberName: member.memberName,
                         location,
-                        risk
+                        risk,
+                        phoneNumber: member.phoneNumber || "",
+                        batteryLevel: location?.batteryLevel ?? 0,
+                        lastSeen: location?.lastSeen || null,
+                        gpsStatus: location?.gpsStatus || "Unknown"
                     });
                 }
                 
-                if (results.length > 0) return res.json(results);
+                if (results.length > 0) {
+                    return res.json(results);
+                } else {
+                    return res.json([]); 
+                }
             } catch (dbError) {
-                console.warn("[BACKEND] Firestore family fetch error, using mock data:", dbError.message);
+                console.warn("[BACKEND] Firestore family fetch error:", dbError.message);
+                res.status(500).json({ error: "Failed to fetch family data" });
             }
+        } else {
+            res.status(500).json({ error: "Database not connected" });
         }
-        
-        // Mock Family Data
-        const mockFamily = [
-            {
-                memberId: "fam_1",
-                memberName: "Mom",
-                location: { lat: 6.93, lon: 79.86 },
-                risk: { level: "SAFE", score: 10, color: "#4ade80" }
-            },
-            {
-                memberId: "fam_2",
-                memberName: "Dad",
-                location: { lat: 6.95, lon: 79.87 },
-                risk: { level: "MODERATE", score: 45, color: "#facc15" }
-            }
-        ];
-        res.json(mockFamily);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

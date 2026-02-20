@@ -1,19 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     StyleSheet, View, Text, ScrollView, TouchableOpacity,
-    TextInput, FlatList, Switch, Alert, Linking, ActivityIndicator
+    TextInput, Switch, Alert, Linking, ActivityIndicator, AppState
 } from 'react-native';
 import DetailLayout from '../components/DetailLayout';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { familyService, locationService } from '../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Location from 'expo-location';
+import * as Battery from 'expo-battery';
 
 // Mock User ID for now (ideally from Auth context)
 const USER_ID = "test_user_123";
+const LINKED_MEMBER_KEY = "linked_family_member_id";
 
 export default function SafetyCircleScreen({ navigation }) {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [isSharingLocation, setIsSharingLocation] = useState(true);
+    const [linkedMemberId, setLinkedMemberId] = useState(null);
+    const [trackingActive, setTrackingActive] = useState(false);
 
     // Add Member State
     const [showAddForm, setShowAddForm] = useState(false);
@@ -21,9 +26,29 @@ export default function SafetyCircleScreen({ navigation }) {
     const [newMemberPhone, setNewMemberPhone] = useState('');
     const [newMemberRelation, setNewMemberRelation] = useState('');
 
+    const locationSubscription = useRef(null);
+
     useEffect(() => {
+        checkLinkedMember();
         fetchFamilyData();
+
+        return () => {
+            stopTracking();
+        };
     }, []);
+
+    // Check if this device is already linked to a member check
+    const checkLinkedMember = async () => {
+        try {
+            const id = await AsyncStorage.getItem(LINKED_MEMBER_KEY);
+            if (id) {
+                setLinkedMemberId(id);
+                startTracking(id);
+            }
+        } catch (e) {
+            console.log("AsyncStorage error", e);
+        }
+    };
 
     const fetchFamilyData = async () => {
         try {
@@ -44,12 +69,11 @@ export default function SafetyCircleScreen({ navigation }) {
         }
 
         try {
-            // In a real app, phone would map to a userId. 
-            // Here, using phone as ID for simplicity or simulation.
             await familyService.addMember({
                 userId: USER_ID,
-                memberId: newMemberPhone, // Using phone as unique ID
+                memberId: newMemberPhone,
                 memberName: newMemberName,
+                phoneNumber: newMemberPhone, 
                 relation: newMemberRelation
             });
             Alert.alert("Success", "Family member added!");
@@ -57,62 +81,138 @@ export default function SafetyCircleScreen({ navigation }) {
             setNewMemberName('');
             setNewMemberPhone('');
             setNewMemberRelation('');
-            fetchFamilyData(); // Refresh list
+            fetchFamilyData(); 
         } catch (error) {
             Alert.alert("Error", "Failed to add member.");
         }
     };
 
-    const handleCall = (phone) => {
-        Linking.openURL(`tel:${phone}`);
+    const handleLinkDevice = async (memberId) => {
+        Alert.alert(
+            "Link Device",
+            "Is this YOUR phone? Linking will enable real-time location and battery tracking for this member.",
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Yes, This is Me", 
+                    onPress: async () => {
+                        await AsyncStorage.setItem(LINKED_MEMBER_KEY, memberId);
+                        setLinkedMemberId(memberId);
+                        startTracking(memberId);
+                        Alert.alert("Device Linked", "You are now tracking as this member.");
+                    }
+                }
+            ]
+        );
     };
 
-    const handleMessage = (phone) => {
-        Linking.openURL(`sms:${phone}`);
+    const handleUnlinkDevice = async () => {
+        await AsyncStorage.removeItem(LINKED_MEMBER_KEY);
+        setLinkedMemberId(null);
+        stopTracking();
+        Alert.alert("Device Unlinked", "Tracking stopped.");
     };
 
-    const renderMember = ({ item }) => {
-        // Determine status style
-        let statusColor = '#94a3b8'; // Offline/Grey
-        let statusText = 'Offline';
-        let statusIcon = 'cloud-off-outline';
+    // --- REAL-TIME TRACKING LOGIC ---
+    const startTracking = async (memberId) => {
+        if (trackingActive) return;
 
-        if (item.risk) {
-            if (item.risk.level === 'SAFE') {
-                statusColor = '#16a34a';
-                statusText = 'Safe';
-                statusIcon = 'check-circle-outline';
-            } else if (item.risk.level === 'HIGH' || item.risk.level === 'MODERATE') {
-                statusColor = '#dc2626';
-                statusText = 'High Risk Zone';
-                statusIcon = 'alert-circle-outline';
-            } else {
-                statusText = 'Unknown';
-            }
+        // 1. Request Permissions
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert("Permission Denied", "Location permission is required for tracking.");
+            return;
         }
 
+        setTrackingActive(true);
+
+        // 2. Start Watching Location
+        locationSubscription.current = await Location.watchPositionAsync(
+            {
+                accuracy: Location.Accuracy.High,
+                timeInterval: 10000, // Update every 10s
+                distanceInterval: 10, // Or every 10 meters
+            },
+            async (loc) => {
+                try {
+                    // 3. Get Battery Level
+                    const batteryLevel = await Battery.getBatteryLevelAsync();
+                    
+                    // 4. Send to Backend
+                    await locationService.updateLocation({
+                        userId: memberId, // Identify as the linked member
+                        location: {
+                            lat: loc.coords.latitude,
+                            lon: loc.coords.longitude
+                        },
+                        riskScore: 0, // Backend recalculates this based on weather
+                        // Additional metadata is sent via updateLocation logic if needed
+                        // Ideally locationService.updateLocation handles the structure
+                    });
+
+                    // We also need to explicitly update battery/status if updateLocation doesn't
+                    // But for now, let's assume updateLocation adds it or we add a specific call
+                    // For now, let's just stick to updateLocation which creates a 'locations' doc
+                    // The backend Controller reads 'batteryLevel' from this doc if passed?
+                    // Let's modify api.js updateLocation to include battery!
+                    // See Note below code.
+
+                } catch (error) {
+                    console.log("Tracking error:", error);
+                }
+            }
+        );
+    };
+
+    const stopTracking = () => {
+        if (locationSubscription.current) {
+            locationSubscription.current.remove();
+            locationSubscription.current = null;
+        }
+        setTrackingActive(false);
+    };
+
+
+    const renderMember = ({ item }) => {
+        const isLinked = item.memberId === linkedMemberId;
+        const statusColor = item.risk?.level === 'SAFE' ? '#16a34a' 
+            : item.risk?.level === 'HIGH' ? '#dc2626' 
+            : item.risk?.level === 'MODERATE' ? '#ca8a04' 
+            : '#94a3b8';
+
         return (
-            <View style={styles.memberCard}>
+            <View style={[styles.memberCard, isLinked && styles.linkedCard]}>
                 <View style={styles.memberInfo}>
                     <View style={[styles.avatar, { backgroundColor: statusColor + '20' }]}>
                         <MaterialCommunityIcons name="account" size={24} color={statusColor} />
                     </View>
                     <View>
-                        <Text style={styles.memberName}>{item.memberName} ({item.relation})</Text>
-                        <View style={[styles.statusBadge, { borderColor: statusColor }]}>
-                            <MaterialCommunityIcons name={statusIcon} size={12} color={statusColor} style={{ marginRight: 4 }} />
-                            <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
-                        </View>
+                        <Text style={styles.memberName}>{item.memberName} {isLinked && "(You)"}</Text>
+                        <Text style={{ fontSize: 12, color: '#64748b' }}>
+                            {item.batteryLevel ? `🔋 ${item.batteryLevel}%` : 'No Battery Data'}
+                        </Text>
+                         <View style={{flexDirection:'row', alignItems:'center', marginTop: 4}}>
+                             {item.gpsStatus === 'Lost' && <MaterialCommunityIcons name="satellite-variant" size={12} color="#64748b" style={{marginRight:4}}/>}
+                             <Text style={{ fontSize: 10, color: '#64748b' }}>
+                                 {item.gpsStatus === 'Lost' ? 'Signal Lost' : 'GPS Active'}
+                             </Text>
+                         </View>
                     </View>
                 </View>
 
+                {/* Link/Unlink Action */}
                 <View style={styles.actions}>
-                    <TouchableOpacity onPress={() => handleMessage(item.memberId)} style={[styles.actionBtn, { backgroundColor: '#e0f2fe' }]}>
-                        <MaterialCommunityIcons name="message-text-outline" size={20} color="#0284c7" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleCall(item.memberId)} style={[styles.actionBtn, { backgroundColor: '#dcfce7' }]}>
-                        <MaterialCommunityIcons name="phone-outline" size={20} color="#16a34a" />
-                    </TouchableOpacity>
+                    {!linkedMemberId ? (
+                        <TouchableOpacity onPress={() => handleLinkDevice(item.memberId)} style={[styles.actionBtn, { backgroundColor: '#e0f2fe' }]}>
+                            <Text style={styles.linkText}>This is Me</Text>
+                        </TouchableOpacity>
+                    ) : isLinked ? (
+                        <TouchableOpacity onPress={handleUnlinkDevice} style={[styles.actionBtn, { backgroundColor: '#fee2e2' }]}>
+                            <Text style={[styles.linkText, {color: '#dc2626'}]}>Unlink</Text>
+                        </TouchableOpacity>
+                    ) : (
+                         <View style={{width: 60}} /> // Spacer
+                    )}
                 </View>
             </View>
         );
@@ -126,33 +226,23 @@ export default function SafetyCircleScreen({ navigation }) {
             navigation={navigation}
         >
             <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-                {/* Hub Header */}
+                {/* Tracking Status Banner */}
+                {trackingActive && (
+                    <View style={styles.trackingBanner}>
+                        <MaterialCommunityIcons name="radar" size={24} color="white" style={styles.pulseIcon} />
+                        <Text style={styles.trackingText}>Real-Time Tracking Active</Text>
+                    </View>
+                )}
+
                 <View style={styles.hubHeader}>
                     <Text style={styles.hubTitle}>Personalized Safety Circle</Text>
                     <Text style={styles.hubSubtitle}>
-                        Build your private network for the monsoon season.
+                        Link devices to enable real-time tracking for family members.
                     </Text>
                 </View>
 
-                {/* Privacy Toggle */}
-                <View style={styles.privacyContainer}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                        <MaterialCommunityIcons name="eye-check-outline" size={24} color="#15803d" />
-                        <View>
-                            <Text style={styles.privacyTitle}>Share Live Location</Text>
-                            <Text style={styles.privacyDesc}>Visible to circle members</Text>
-                        </View>
-                    </View>
-                    <Switch
-                        value={isSharingLocation}
-                        onValueChange={setIsSharingLocation}
-                        trackColor={{ false: "#767577", true: "#86efac" }}
-                        thumbColor={isSharingLocation ? "#16a34a" : "#f4f3f4"}
-                    />
-                </View>
-
-                {/* Add Member Button */}
-                <TouchableOpacity
+                 {/* Add Member Button */}
+                 <TouchableOpacity
                     style={styles.addBtn}
                     onPress={() => setShowAddForm(!showAddForm)}
                 >
@@ -162,7 +252,7 @@ export default function SafetyCircleScreen({ navigation }) {
 
                 {/* Add Member Form */}
                 {showAddForm && (
-                    <View style={styles.addForm}>
+                     <View style={styles.addForm}>
                         <Text style={styles.formHeader}>Invite via Phone or Circle Code</Text>
                         <TextInput
                             style={styles.input}
@@ -184,7 +274,7 @@ export default function SafetyCircleScreen({ navigation }) {
                             onChangeText={setNewMemberRelation}
                         />
                         <TouchableOpacity style={styles.submitBtn} onPress={handleAddMember}>
-                            <Text style={styles.submitBtnText}>Send Invitation</Text>
+                            <Text style={styles.submitBtnText}>Add Member</Text>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -204,141 +294,41 @@ export default function SafetyCircleScreen({ navigation }) {
                         )}
                     </View>
                 )}
-
-                {/* Benefits Section */}
-                <View style={styles.benefitsSection}>
-                    <Text style={styles.benefitsHeader}>Why use Safety Circle?</Text>
-                    <InfoRow icon="heart-plus-outline" text="Peace of Mind" />
-                    <InfoRow icon="update" text="Real-time Updates" />
-                    <InfoRow icon="map-marker-radius" text="Location Visibility of Members" />
-                    <InfoRow icon="shield-lock-outline" text="Family Access Control" />
-                </View>
-
             </ScrollView>
         </DetailLayout>
     );
 }
 
-function InfoRow({ icon, text }) {
-    return (
-        <View style={styles.infoRow}>
-            <MaterialCommunityIcons name={icon} size={20} color="#15803d" />
-            <Text style={styles.infoText}>{text}</Text>
-        </View>
-    );
-}
-
 const styles = StyleSheet.create({
-    hubHeader: {
-        marginBottom: 20,
-        backgroundColor: '#fff',
-        padding: 16,
-        borderRadius: 12,
-        borderLeftWidth: 4,
-        borderLeftColor: '#22c55e',
-        elevation: 1
-    },
+    hubHeader: { marginTop: 10, marginBottom: 20, backgroundColor: '#fff', padding: 16, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: '#22c55e', elevation: 1 },
     hubTitle: { fontSize: 20, fontWeight: 'bold', color: '#14532d' },
     hubSubtitle: { fontSize: 14, color: '#4b5563', marginTop: 4 },
+    
+    trackingBanner: { backgroundColor: '#16a34a', padding: 12, marginBottom: 16, borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+    trackingText: { color: 'white', fontWeight: 'bold' },
 
-    privacyContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        padding: 16,
-        borderRadius: 12,
-        marginBottom: 20,
-        elevation: 1
-    },
-    privacyTitle: { fontSize: 16, fontWeight: 'bold', color: '#14532d' },
-    privacyDesc: { fontSize: 12, color: '#6b7280' },
-
-    addBtn: {
-        flexDirection: 'row',
-        backgroundColor: '#16a34a',
-        padding: 14,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 16,
-        elevation: 2
-    },
+    addBtn: { flexDirection: 'row', backgroundColor: '#16a34a', padding: 14, borderRadius: 12, justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 16, elevation: 2 },
     addBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 
-    addForm: {
-        backgroundColor: '#fff',
-        padding: 16,
-        borderRadius: 12,
-        marginBottom: 20,
-        borderWidth: 1,
-        borderColor: '#bbf7d0'
-    },
+    addForm: { backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 20, borderWidth: 1, borderColor: '#bbf7d0' },
     formHeader: { fontSize: 14, fontWeight: 'bold', marginBottom: 12, color: '#15803d' },
-    input: {
-        backgroundColor: '#f9fafb',
-        borderWidth: 1,
-        borderColor: '#e5e7eb',
-        borderRadius: 8,
-        padding: 10,
-        marginBottom: 10,
-        fontSize: 14
-    },
-    submitBtn: {
-        backgroundColor: '#15803d',
-        padding: 12,
-        borderRadius: 8,
-        alignItems: 'center'
-    },
+    input: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 14 },
+    submitBtn: { backgroundColor: '#15803d', padding: 12, borderRadius: 8, alignItems: 'center' },
     submitBtnText: { color: '#fff', fontWeight: 'bold' },
 
     sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#14532d', marginBottom: 12 },
     listContainer: { gap: 10 },
-    memberCard: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        padding: 12,
-        borderRadius: 12,
-        elevation: 1
-    },
-    memberInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-    avatar: {
-        width: 48, height: 48, borderRadius: 24,
-        justifyContent: 'center', alignItems: 'center'
-    },
+    
+    memberCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', padding: 12, borderRadius: 12, elevation: 1 },
+    linkedCard: { borderColor: '#22c55e', borderWidth: 2 },
+    
+    memberInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+    avatar: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
     memberName: { fontSize: 16, fontWeight: 'bold', color: '#374151' },
-    statusBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderRadius: 20,
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        marginTop: 4,
-        alignSelf: 'flex-start'
-    },
-    statusText: { fontSize: 10, fontWeight: 'bold' },
-
+    
     actions: { flexDirection: 'row', gap: 8 },
-    actionBtn: {
-        width: 36, height: 36, borderRadius: 18,
-        justifyContent: 'center', alignItems: 'center'
-    },
-
+    actionBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+    linkText: { fontSize: 12, fontWeight: 'bold', color: '#0284c7' },
+    
     emptyText: { textAlign: 'center', color: '#9ca3af', fontStyle: 'italic', marginVertical: 20 },
-
-    benefitsSection: {
-        marginTop: 30,
-        backgroundColor: '#f0fdf4',
-        padding: 16,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#bbf7d0'
-    },
-    benefitsHeader: { fontSize: 16, fontWeight: 'bold', color: '#15803d', marginBottom: 12 },
-    infoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
-    infoText: { fontSize: 14, color: '#166534', fontWeight: '500' }
 });

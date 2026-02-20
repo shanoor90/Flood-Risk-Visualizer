@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore';
 
 // Keep backend URL for services that need server-side logic (like Weather/Risk calculation)
-const BASE_URL = 'http://10.34.31.177:5000/api/v1';
+const BASE_URL = 'http://10.34.9.167:5000/api/v1';
 
 const api = axios.create({
     baseURL: BASE_URL,
@@ -145,11 +145,13 @@ export const locationService = {
     // Add location to 'locations' collection
     updateLocation: async (data) => {
         try {
-            const { userId, location, riskScore } = data;
+            const { userId, location, riskScore, batteryLevel, gpsStatus } = data;
             await addDoc(collection(db, 'locations'), {
                 userId,
                 location,
                 riskScore,
+                batteryLevel: batteryLevel !== undefined ? Math.round(batteryLevel * 100) : null, // Convert 0.85 to 85
+                gpsStatus: gpsStatus || "Active",
                 timestamp: serverTimestamp()
             });
             return { data: { message: "Location updated" } };

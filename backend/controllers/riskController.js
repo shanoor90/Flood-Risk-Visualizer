@@ -8,8 +8,12 @@ exports.getRiskData = async (req, res) => {
             return res.status(400).json({ error: "Latitude and Longitude are required" });
         }
 
+        console.log(`Risk Calculation Requested for: Lat ${lat}, Lon ${lon}`);
+
         const weatherData = await weatherService.getWeatherData(lat, lon);
         const riskAnalysis = weatherService.calculateRiskScore(weatherData);
+
+        console.log("Risk Score Calculated:", riskAnalysis);
 
         res.json({
             location: { lat: parseFloat(lat), lon: parseFloat(lon) },

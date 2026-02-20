@@ -30,9 +30,9 @@ exports.getShelters = async (req, res) => {
         // For now, return static list with approximate distances
         
         const shelters = [
-            { id: 's1', name: "Community Center A", location: "Colombo North", capacity: "High", status: "OPEN" },
-            { id: 's2', name: "Public School B", location: "Gampaha", capacity: "Medium", status: "FULL" },
-            { id: 's3', name: "temple C", location: "Kalutara", capacity: "High", status: "OPEN" }
+            { id: 's1', name: "Community Center A", location: "Colombo North", capacity: "High", status: "OPEN", lat: 6.9400, lon: 79.8600 },
+            { id: 's2', name: "Public School B", location: "Gampaha", capacity: "Medium", status: "FULL", lat: 7.0840, lon: 79.9940 },
+            { id: 's3', name: "Temple C", location: "Kalutara", capacity: "High", status: "OPEN", lat: 6.5854, lon: 79.9607 }
         ];
 
         res.json(shelters);

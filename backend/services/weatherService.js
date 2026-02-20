@@ -23,6 +23,7 @@ class WeatherService {
                     latitude: lat,
                     longitude: lon,
                     current: 'temperature_2m,relative_humidity_2m,rain,wind_speed_10m',
+                    daily: 'precipitation_sum',
                     timezone: 'auto'
                 },
                 timeout: 3000 // 3 seconds timeout
@@ -31,6 +32,10 @@ class WeatherService {
             const elevation = response.data.elevation || 10; 
             const current = response.data.current;
             
+            
+            const daily = response.data.daily;
+            const dailyRain = daily ? daily.precipitation_sum : [];
+
             const weatherData = {
                 temp: current.temperature_2m,
                 humidity: current.relative_humidity_2m,
@@ -38,12 +43,14 @@ class WeatherService {
                 stormIntensity: Math.min(100, current.wind_speed_10m * 2), 
                 waterLevel: 1.5, 
                 elevation: elevation,
-                time: current.time 
+                time: current.time,
+                forecast: dailyRain // Array of next days rainfall
             };
 
             // Update Cache
             this.cache = { data: weatherData, timestamp: now };
             
+            console.log("Weather Data Fetched:", weatherData);
             return weatherData;
         } catch (error) {
             console.error("Error fetching weather data (using fallback):", error.message);
@@ -97,7 +104,8 @@ class WeatherService {
             humidity: 85,
             rainfall: 45,
             stormIntensity: 60,
-            waterLevel: 1.8
+            waterLevel: 1.8,
+            forecast: [10, 5, 0, 20, 45, 12, 5] // Mock 7-day forecast
         };
     }
 }

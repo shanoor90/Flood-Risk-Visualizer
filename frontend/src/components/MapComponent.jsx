@@ -3,7 +3,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default function MapComponent({ location, riskLevel, riskScore }) {
+export default function MapComponent({ location, riskLevel, riskScore, children }) {
     if (!location) {
         return (
             <View style={styles.loadingContainer}>
@@ -49,6 +49,9 @@ export default function MapComponent({ location, riskLevel, riskScore }) {
                         <MaterialCommunityIcons name={iconName} size={20} color="#fff" />
                     </View>
                 </Marker>
+                
+                {children}
+
             </MapView>
         </View>
     );
