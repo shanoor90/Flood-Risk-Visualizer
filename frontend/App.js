@@ -57,6 +57,10 @@ import SafetyCircleScreen from './src/screens/SafetyCircleScreen';
 import RealTimeMonitoringScreen from './src/screens/RealTimeMonitoringScreen';
 import AutomaticAlertsScreen from './src/screens/AutomaticAlertsScreen';
 import JoinFamilyScreen from './src/screens/JoinFamilyScreen';
+import PreparednessChecklistsScreen from './src/screens/PreparednessChecklistsScreen';
+import EvacuationProceduresScreen from './src/screens/EvacuationProceduresScreen';
+import EmergencySuppliesScreen from './src/screens/EmergencySuppliesScreen';
+import DisasterResponseScreen from './src/screens/DisasterResponseScreen';
 
 const Stack = createStackNavigator();
 
@@ -123,6 +127,10 @@ export default function App() {
               <Stack.Screen name="RealTimeMonitoring" component={RealTimeMonitoringScreen} />
               <Stack.Screen name="AutomaticAlerts" component={AutomaticAlertsScreen} />
               <Stack.Screen name="JoinFamily" component={JoinFamilyScreen} />
+              <Stack.Screen name="PreparednessChecklists" component={PreparednessChecklistsScreen} />
+              <Stack.Screen name="EvacuationProcedures" component={EvacuationProceduresScreen} />
+              <Stack.Screen name="EmergencySupplies" component={EmergencySuppliesScreen} />
+              <Stack.Screen name="DisasterResponse" component={DisasterResponseScreen} />
             </>
           ) : (
             <>

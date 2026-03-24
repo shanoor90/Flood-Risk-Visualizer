@@ -36,16 +36,25 @@ export default function MobileBundleScreen({ navigation }) {
                             icon="clipboard-check-outline" 
                             title="Preparedness Checklists" 
                             desc="Comprehensive flood preparedness checklists." 
+                            onPress={() => navigation.navigate('PreparednessChecklists')}
+                        />
+                        <InfoItem 
+                            icon="run-fast" 
+                            title="Evacuation Procedures" 
+                            desc="Step-by-step emergency evacuation procedures." 
+                            onPress={() => navigation.navigate('EvacuationProcedures')}
                         />
                         <InfoItem 
                             icon="bag-checked" 
                             title="Emergency Supplies" 
                             desc="Recommendations for critical emergency supply kits." 
+                            onPress={() => navigation.navigate('EmergencySupplies')}
                         />
                         <InfoItem 
                             icon="lifebuoy" 
                             title="Disaster Response" 
                             desc="Basic disaster response instructions." 
+                            onPress={() => navigation.navigate('DisasterResponse')}
                         />
                     </View>
 
@@ -61,15 +70,16 @@ export default function MobileBundleScreen({ navigation }) {
     );
 }
 
-function InfoItem({ icon, title, desc }) {
+function InfoItem({ icon, title, desc, onPress }) {
     return (
-        <View style={styles.item}>
+        <TouchableOpacity style={styles.item} onPress={onPress} activeOpacity={0.7}>
             <MaterialCommunityIcons name={icon} size={24} color="#059669" />
             <View style={styles.textContainer}>
                 <Text style={styles.itemTitle}>{title}</Text>
                 <Text style={styles.itemDesc}>{desc}</Text>
             </View>
-        </View>
+            <MaterialCommunityIcons name="chevron-right" size={20} color="#94a3b8" />
+        </TouchableOpacity>
     );
 }
 
