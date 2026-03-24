@@ -30,6 +30,9 @@ export const authService = {
 
       return user;
     } catch (error) {
+      if (error.code === 'permission-denied' || error.message.includes('permission')) {
+        error.message = 'Firestore Security Rules are blocking user profile creation. Please go to your Firebase Console -> Firestore Database -> Rules and allow read/write access for authenticated users.';
+      }
       throw error;
     }
   },

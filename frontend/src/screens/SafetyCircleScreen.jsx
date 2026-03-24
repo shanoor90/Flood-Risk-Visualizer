@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import DetailLayout from '../components/DetailLayout';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { familyService, locationService } from '../services/api';
+import { familyService, locationService, inviteService } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import * as Battery from 'expo-battery';
@@ -29,6 +29,28 @@ export default function SafetyCircleScreen({ navigation }) {
     const [newMemberRelation, setNewMemberRelation] = useState('');
 
     const locationSubscription = useRef(null);
+
+    const handleLinkDevice = async (memberId) => {
+        try {
+            await AsyncStorage.setItem(LINKED_MEMBER_KEY, memberId);
+            setLinkedMemberId(memberId);
+            startTracking(memberId);
+            Alert.alert("Success", "This device is now linked for tracking.");
+        } catch (e) {
+            Alert.alert("Error", "Failed to link device.");
+        }
+    };
+
+    const handleUnlinkDevice = async () => {
+        try {
+            await AsyncStorage.removeItem(LINKED_MEMBER_KEY);
+            setLinkedMemberId(null);
+            stopTracking();
+            Alert.alert("Unlinked", "Device unlinked successfully.");
+        } catch (e) {
+            Alert.alert("Error", "Failed to unlink device.");
+        }
+    };
 
     useEffect(() => {
         const user = authService.getCurrentUser();

@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ImageBackground, SafeAreaView, Platform } from 'react-native';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TextInput, 
+  TouchableOpacity, 
+  Alert, 
+  ImageBackground, 
+  SafeAreaView, 
+  Platform,
+  KeyboardAvoidingView,
+  ScrollView
+} from 'react-native';
 import GlassCard from '../components/GlassCard';
 
 // --- UPDATED: Changed from .png to .jpg ---
@@ -18,7 +30,7 @@ export default function LoginScreen({ navigation }) {
       try {
         await authService.login(email, password);
         setLoading(false);
-        navigation.replace('Dashboard');
+        // navigation.replace('Dashboard'); // App.js handles this automatically now
       } catch (error) {
         setLoading(false);
         Alert.alert('Login Error', error.message);
@@ -32,54 +44,59 @@ export default function LoginScreen({ navigation }) {
     <ImageBackground source={loginBgImage} style={styles.backgroundImage} resizeMode="cover">
       <View style={styles.overlay}>
         <SafeAreaView style={styles.safeArea}>
-          <View style={styles.container}>
-            <GlassCard style={styles.card} intensity={30}>
-              <View style={styles.contentContainer}>
-                <Text style={styles.title}>Welcome Back</Text>
-                <Text style={styles.subtitle}>Sign in to continue accessing crucial flood data.</Text>
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.container}
+          >
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+              <GlassCard style={styles.card} intensity={30}>
+                <View style={styles.contentContainer}>
+                  <Text style={styles.title}>Welcome Back</Text>
+                  <Text style={styles.subtitle}>Sign in to continue accessing crucial flood data.</Text>
 
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Email</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter your email"
-                    placeholderTextColor="rgba(255,255,255,0.6)"
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                  />
-                </View>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Email</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your email"
+                      placeholderTextColor="rgba(255,255,255,0.6)"
+                      value={email}
+                      onChangeText={setEmail}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                    />
+                  </View>
 
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Password</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter your password"
-                    placeholderTextColor="rgba(255,255,255,0.6)"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                  />
-                </View>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Password</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your password"
+                      placeholderTextColor="rgba(255,255,255,0.6)"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry
+                    />
+                  </View>
 
-                <TouchableOpacity 
-                  style={[styles.button, loading && styles.buttonDisabled]} 
-                  onPress={handleLogin}
-                  disabled={loading}
-                >
-                  <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Login'}</Text>
-                </TouchableOpacity>
-
-                <View style={styles.footer}>
-                  <Text style={styles.footerText}>Don't have an account? </Text>
-                  <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-                    <Text style={styles.linkText}>Sign Up</Text>
+                  <TouchableOpacity 
+                    style={[styles.button, loading && styles.buttonDisabled]} 
+                    onPress={handleLogin}
+                    disabled={loading}
+                  >
+                    <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Login'}</Text>
                   </TouchableOpacity>
+
+                  <View style={styles.footer}>
+                    <Text style={styles.footerText}>Don't have an account? </Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                      <Text style={styles.linkText}>Sign Up</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            </GlassCard>
-          </View>
+              </GlassCard>
+            </ScrollView>
+          </KeyboardAvoidingView>
         </SafeAreaView>
       </View>
     </ImageBackground>
@@ -103,6 +120,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
   },

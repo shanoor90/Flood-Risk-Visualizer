@@ -4,6 +4,7 @@ import DetailLayout from '../components/DetailLayout';
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { locationService, familyService, guideService, riskService } from '../services/api';
+import { authService } from '../services/authService';
 
 const { width } = Dimensions.get('window');
 
@@ -26,8 +27,9 @@ export default function RealTimeMonitoringScreen({ navigation }) {
         // Fetch user's latest location to center map
         const fetchData = async () => {
             try {
-                // Hardcoded ID for demo, ideally from auth context
-                const userId = "test_user_123";
+                // Use current auth user
+                const user = authService.getCurrentUser();
+                const userId = user ? user.uid : "test_user_fallback";
                 
                 // 1. Get Location
                 const locResponse = await locationService.getLatestLocation(userId);

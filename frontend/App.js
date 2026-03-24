@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import * as React from 'react';
 import { View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -13,16 +13,24 @@ const testFirebaseConnection = async () => {
     // ✅ Test 1: Auth
     console.log('🔐 Auth:', auth ? '✅ Connected' : '❌ Failed');
 
-    // ✅ Test 2: Firestore - write & read
-    const testRef = doc(db, '_connection_test', 'ping');
-    await setDoc(testRef, { status: 'ok', time: serverTimestamp() });
-    const snap = await getDoc(testRef);
-    console.log('📦 Firestore:', snap.exists() ? '✅ Connected' : '❌ Failed');
+    // ✅ Test 2: Firestore - write & read (handles permission denied as proof of connection)
+    try {
+      const testRef = doc(db, '_connection_test', 'ping');
+      await setDoc(testRef, { status: 'ok', time: serverTimestamp() });
+      await getDoc(testRef);
+      console.log('📦 Firestore: ✅ Connected');
+    } catch (e) {
+      if (e.code === 'permission-denied') {
+        console.log('📦 Firestore: ✅ Connected (But writes are blocked by Security Rules, which is normal)');
+      } else {
+        console.log('📦 Firestore: ❌ Failed - ' + e.message);
+      }
+    }
 
     // ✅ Test 3: Storage
     console.log('☁️ Storage:', storage ? '✅ Connected' : '❌ Failed');
 
-    console.log('🎉 All Firebase services connected!');
+    console.log('🎉 All Firebase services are accessible!');
   } catch (error) {
     console.error('❌ Firebase connection error:', error.message);
   }
@@ -55,45 +63,78 @@ import JoinFamilyScreen from './src/screens/JoinFamilyScreen';
 const Stack = createStackNavigator();
 
 export default function App() {
-  useEffect(() => {
+  const [user, setUser] = React.useState(null);
+  const [initializing, setInitializing] = React.useState(true);
+
+  // Handle user state changes
+  function handleAuthStateChanged(user) {
+    setUser(user);
+    if (initializing) setInitializing(false);
+  }
+
+  React.useEffect(() => {
+    const subscriber = auth.onAuthStateChanged(handleAuthStateChanged);
     testFirebaseConnection();
+
+    // 🛡️ Safety timeout: If Firebase takes too long, stop blocking the app
+    const timer = setTimeout(() => {
+      if (initializing) setInitializing(false);
+    }, 5000);
+
+    return () => {
+      subscriber();
+      clearTimeout(timer);
+    };
   }, []);
+
+  if (initializing) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#121212', justifyContent: 'center', alignItems: 'center' }}>
+        <StatusBar style="light" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
       <View style={{ flex: 1, backgroundColor: '#121212' }}>
         <Stack.Navigator
-          initialRouteName="Login"
           screenOptions={{
             headerShown: false,
             cardStyle: { backgroundColor: 'transparent' },
           }}
         >
-          {/* Auth Screens */}
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Signup" component={SignupScreen} />
-
-          {/* App Screens */}
-          <Stack.Screen name="Dashboard" component={DashboardScreen} />
-          <Stack.Screen name="RiskDetail" component={RiskDetailScreen} />
-          <Stack.Screen name="SOS" component={SOSScreen} />
-          <Stack.Screen name="Tracking" component={TrackingScreen} />
-          <Stack.Screen name="Family" component={FamilyScreen} />
-          <Stack.Screen name="SurvivalGuide" component={SurvivalGuideScreen} />
-          <Stack.Screen name="GPSBackup" component={GPSBackupScreen} />
-          <Stack.Screen name="HighRisk" component={HighRiskScreen} />
-          <Stack.Screen name="TemporalRecording" component={TemporalRecordingScreen} />
-          <Stack.Screen name="FamilyAccess" component={FamilyAccessScreen} />
-          <Stack.Screen name="ActiveTracking" component={ActiveTrackingScreen} />
-          <Stack.Screen name="MobileBundle" component={MobileBundleScreen} />
-          <Stack.Screen name="MedicalGuidance" component={MedicalGuidanceScreen} />
-          <Stack.Screen name="EmergencyDirectory" component={EmergencyDirectoryScreen} />
-          <Stack.Screen name="OfflineMode" component={OfflineModeScreen} />
-          <Stack.Screen name="SafetyCircle" component={SafetyCircleScreen} />
-          <Stack.Screen name="FamilyRelationships" component={FamilyRelationshipsScreen} />
-          <Stack.Screen name="RealTimeMonitoring" component={RealTimeMonitoringScreen} />
-          <Stack.Screen name="AutomaticAlerts" component={AutomaticAlertsScreen} />
-          <Stack.Screen name="JoinFamily" component={JoinFamilyScreen} />
+          {user ? (
+            <>
+              {/* App Screens */}
+              <Stack.Screen name="Dashboard" component={DashboardScreen} />
+              <Stack.Screen name="RiskDetail" component={RiskDetailScreen} />
+              <Stack.Screen name="SOS" component={SOSScreen} />
+              <Stack.Screen name="Tracking" component={TrackingScreen} />
+              <Stack.Screen name="Family" component={FamilyScreen} />
+              <Stack.Screen name="SurvivalGuide" component={SurvivalGuideScreen} />
+              <Stack.Screen name="GPSBackup" component={GPSBackupScreen} />
+              <Stack.Screen name="HighRisk" component={HighRiskScreen} />
+              <Stack.Screen name="TemporalRecording" component={TemporalRecordingScreen} />
+              <Stack.Screen name="FamilyAccess" component={FamilyAccessScreen} />
+              <Stack.Screen name="ActiveTracking" component={ActiveTrackingScreen} />
+              <Stack.Screen name="MobileBundle" component={MobileBundleScreen} />
+              <Stack.Screen name="MedicalGuidance" component={MedicalGuidanceScreen} />
+              <Stack.Screen name="EmergencyDirectory" component={EmergencyDirectoryScreen} />
+              <Stack.Screen name="OfflineMode" component={OfflineModeScreen} />
+              <Stack.Screen name="SafetyCircle" component={SafetyCircleScreen} />
+              <Stack.Screen name="FamilyRelationships" component={FamilyRelationshipsScreen} />
+              <Stack.Screen name="RealTimeMonitoring" component={RealTimeMonitoringScreen} />
+              <Stack.Screen name="AutomaticAlerts" component={AutomaticAlertsScreen} />
+              <Stack.Screen name="JoinFamily" component={JoinFamilyScreen} />
+            </>
+          ) : (
+            <>
+              {/* Auth Screens */}
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="Signup" component={SignupScreen} />
+            </>
+          )}
         </Stack.Navigator>
       </View>
       <StatusBar style="light" />

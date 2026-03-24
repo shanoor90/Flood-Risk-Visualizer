@@ -5,11 +5,14 @@ import RiskMapCard from '../components/RiskMapCard';
 import SOSButton from '../components/SOSButton';
 import FamilyList from '../components/FamilyList';
 import InfoCard from '../components/InfoCard';
+import { authService } from '../services/authService';
 
 // The original rainy background image URL
 const DASHBOARD_BG_URL = 'https://images.unsplash.com/photo-1569012871812-f38ee64cd54c?q=80&w=2070&auto=format&fit=crop';
 
 export default function DashboardScreen({ navigation }) {
+  const user = authService.getCurrentUser();
+  const userName = user?.displayName || "User";
   return (
     // 1. Wrap the entire screen in the Background Image
     <ImageBackground source={{ uri: DASHBOARD_BG_URL }} style={styles.bgImage} resizeMode="cover">
@@ -25,7 +28,7 @@ export default function DashboardScreen({ navigation }) {
             
             <ScrollView contentContainerStyle={styles.content}>
               <View style={styles.intro}>
-                  <Text style={styles.greeting}>Hello, User 👋</Text>
+                  <Text style={styles.greeting}>Hello, {userName} 👋</Text>
                   <Text style={styles.subGreeting}>Stay safe during the floods.</Text>
               </View>
 
