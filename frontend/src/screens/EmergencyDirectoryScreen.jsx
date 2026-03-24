@@ -36,26 +36,19 @@ export default function EmergencyDirectoryScreen({ navigation }) {
                             icon="police-badge" 
                             title="Hotlines" 
                             desc="Police and emergency hotlines for immediate assistance." 
+                            onPress={() => navigation.navigate('Hotlines')}
                         />
                         <InfoItem 
                             icon="ambulance" 
                             title="Ambulance Services" 
                             desc="Quick access to local medical transport and ambulance dispatch." 
-                        />
-                        <InfoItem 
-                            icon="shield-alert" 
-                            title="Management Authorities" 
-                            desc="Contacts for disaster management and relief authorities." 
+                            onPress={() => navigation.navigate('AmbulanceServices')}
                         />
                         <InfoItem 
                             icon="hospital-building" 
                             title="Hospitals & Clinics" 
                             desc="List of nearby hospitals and 24/7 medical centers." 
-                        />
-                        <InfoItem 
-                            icon="home-city" 
-                            title="Evacuation Shelters" 
-                            desc="Government-approved shelters and safe locations." 
+                            onPress={() => navigation.navigate('HospitalsClinics')}
                         />
                     </View>
 
@@ -71,15 +64,16 @@ export default function EmergencyDirectoryScreen({ navigation }) {
     );
 }
 
-function InfoItem({ icon, title, desc }) {
+function InfoItem({ icon, title, desc, onPress }) {
     return (
-        <View style={styles.item}>
+        <TouchableOpacity style={styles.item} onPress={onPress} activeOpacity={0.7}>
             <MaterialCommunityIcons name={icon} size={24} color="#059669" />
             <View style={styles.textContainer}>
                 <Text style={styles.itemTitle}>{title}</Text>
                 <Text style={styles.itemDesc}>{desc}</Text>
             </View>
-        </View>
+            <MaterialCommunityIcons name="chevron-right" size={20} color="#94a3b8" />
+        </TouchableOpacity>
     );
 }
 

@@ -67,6 +67,9 @@ import InfectionPreventionScreen from './src/screens/InfectionPreventionScreen';
 import FracturesSprainsScreen from './src/screens/FracturesSprainsScreen';
 import BasicCPRScreen from './src/screens/BasicCPRScreen';
 import DehydrationScreen from './src/screens/DehydrationScreen';
+import HotlinesScreen from './src/screens/HotlinesScreen';
+import AmbulanceServicesScreen from './src/screens/AmbulanceServicesScreen';
+import HospitalsClinicsScreen from './src/screens/HospitalsClinicsScreen';
 
 const Stack = createStackNavigator();
 
@@ -143,6 +146,9 @@ export default function App() {
               <Stack.Screen name="FracturesSprains" component={FracturesSprainsScreen} />
               <Stack.Screen name="BasicCPR" component={BasicCPRScreen} />
               <Stack.Screen name="Dehydration" component={DehydrationScreen} />
+              <Stack.Screen name="Hotlines" component={HotlinesScreen} />
+              <Stack.Screen name="AmbulanceServices" component={AmbulanceServicesScreen} />
+              <Stack.Screen name="HospitalsClinics" component={HospitalsClinicsScreen} />
             </>
           ) : (
             <>
