@@ -64,6 +64,84 @@ exports.deleteFamilyMember = async (req, res) => {
     }
 };
 
+// --- Invite System ---
+
+exports.createInvite = async (req, res) => {
+    try {
+        const { userId, memberName, relation } = req.body;
+        if (!userId || !memberName || !relation) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        // Generate 6-digit code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+        if (db) {
+            await db.collection('invites').doc(code).set({
+                code,
+                inviterId: userId,
+                memberName, // The name the inviter calls them (e.g. "Mom")
+                relation,
+                createdAt: new Date()
+            });
+            res.status(201).json({ code, message: "Invite generated" });
+        } else {
+            res.status(500).json({ error: "Database not connected" });
+        }
+    } catch (error) {
+        console.error("Create Invite Error:", error);
+        res.status(500).json({ error: "Failed to create invite" });
+    }
+};
+
+exports.acceptInvite = async (req, res) => {
+    try {
+        const { code, userId, phone } = req.body; // userId is the JOINER
+        if (!code || !userId) {
+            return res.status(400).json({ error: "Missing code or user ID" });
+        }
+
+        if (db) {
+            const inviteDoc = await db.collection('invites').doc(code).get();
+            if (!inviteDoc.exists) {
+                return res.status(404).json({ error: "Invalid or expired invite code" });
+            }
+
+            const inviteData = inviteDoc.data();
+            const inviterId = inviteData.inviterId;
+
+            // 1. Add JOINER to INVITER's family list
+            // The inviter calls them "Mom" or whatever was in the invite
+            await db.collection('users').doc(inviterId).collection('family').doc(userId).set({
+                memberId: userId,
+                memberName: inviteData.memberName,
+                relation: inviteData.relation,
+                phoneNumber: phone || "",
+                addedAt: new Date()
+            });
+
+            // 2. (Optional) Add INVITER to JOINER's list?
+            // For now, let's keep it unidirectional: Inviter tracks Joiner.
+            // But usually safety circles are mutual.
+            // Let's just do unidirectional as per "view *their* location".
+
+            // 3. Initialize Location for Joiner if not exists
+            // (optional, but good for immediate feedback)
+            
+            // 4. Delete Invite
+            await db.collection('invites').doc(code).delete();
+
+            res.status(200).json({ message: "Joined family circle successfully" });
+
+        } else {
+            res.status(500).json({ error: "Database not connected" });
+        }
+    } catch (error) {
+        console.error("Accept Invite Error:", error);
+        res.status(500).json({ error: "Failed to accept invite" });
+    }
+};
+
 exports.getFamilyRisk = async (req, res) => {
     try {
         const { userId } = req.params;

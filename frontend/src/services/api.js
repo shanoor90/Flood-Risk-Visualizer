@@ -100,6 +100,7 @@ export const familyService = {
                 let location = null;
                 let risk = { level: 'UNKNOWN', score: 0, color: '#94a3b8' };
 
+                try {
                 // Get latest location for this member
                 const locQuery = query(
                     collection(db, 'locations'),
@@ -118,6 +119,9 @@ export const familyService = {
                         color: locData.riskScore > 70 ? '#ef4444' : locData.riskScore > 40 ? '#facc15' : '#4ade80'
                     } : risk;
                 }
+                } catch (locError) {
+                    console.warn(`[FamilyService] Could not fetch location for ${member.memberName}:`, locError.message);
+                }
 
                 familyList.push({
                     memberId: member.memberId,
@@ -133,6 +137,59 @@ export const familyService = {
             throw error;
         }
     },
+};
+
+export const inviteService = {
+    // 🎲 Create Invite Code
+    createInvite: async (inviterId, memberName, relation) => {
+        try {
+            const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit code
+            const inviteRef = doc(db, 'invites', code);
+            await setDoc(inviteRef, {
+                inviterId,
+                memberName, // The name the inviter set for this person (e.g. "Mom")
+                relation,
+                createdAt: serverTimestamp()
+            });
+            return { data: { code } };
+        } catch (error) {
+            console.error("Invite creation error:", error);
+            throw error;
+        }
+    },
+
+    // 🤝 Accept Invite
+    acceptInvite: async (code, userId, userPhone) => {
+        try {
+            const inviteRef = doc(db, 'invites', code);
+            const inviteSnap = await getDoc(inviteRef);
+
+            if (!inviteSnap.exists()) {
+                throw new Error("Invalid or expired invite code.");
+            }
+
+            const inviteData = inviteSnap.data();
+            const { inviterId, memberName, relation } = inviteData;
+
+            // 1. Add this user to the Inviter's Family List
+            // We use the User's Real ID as the document ID so we can track them easily later
+            await setDoc(doc(db, 'users', inviterId, 'family', userId), {
+                memberId: userId, // CRITICAL: This links to the actual user document/location
+                memberName: memberName,
+                relation: relation,
+                phoneNumber: userPhone,
+                joinedAt: serverTimestamp()
+            });
+
+            // 2. Delete the invite (one-time use)
+            await deleteDoc(inviteRef);
+
+            return { data: { message: "Joined family successfully!", inviterId } };
+        } catch (error) {
+            console.error("Invite accept error:", error);
+            throw error;
+        }
+    }
 };
 
 export const guideService = {

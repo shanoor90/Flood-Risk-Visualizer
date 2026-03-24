@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, Switch, TouchableOpacity, Alert, ActivityIndicator, SafeAreaView, Platform, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, Switch, TouchableOpacity, Alert, ActivityIndicator, SafeAreaView, Platform, ScrollView, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { locationService } from '../services/api';
+import { authService } from '../services/authService';
 import * as Location from 'expo-location';
 
-// Mock User ID for now - in real app this comes from Auth Context
-const USER_ID = "test_user_123";
-
 export default function TrackingScreen({ navigation }) {
+    const [userId, setUserId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [lastSynced, setLastSynced] = useState(null);
     const [preferences, setPreferences] = useState({
@@ -21,23 +20,33 @@ export default function TrackingScreen({ navigation }) {
     const trackingIntervalRef = useRef(null);
 
     useEffect(() => {
-        fetchPreferences();
+        const user = authService.getCurrentUser();
+        if (user) {
+            setUserId(user.uid);
+        }
         return () => stopTracking(); // Cleanup on unmount
     }, []);
 
     useEffect(() => {
-        if (!loading) {
+        if (userId) {
+            fetchPreferences();
+        }
+    }, [userId]);
+
+    useEffect(() => {
+        if (!loading && userId) {
             if (preferences.activeTracking) {
                 startTracking();
             } else {
                 stopTracking();
             }
         }
-    }, [preferences.activeTracking, preferences.highRiskFrequency, loading]);
+    }, [preferences.activeTracking, preferences.highRiskFrequency, loading, userId]);
 
     const fetchPreferences = async () => {
+        if (!userId) return;
         try {
-            const response = await locationService.getPreferences(USER_ID);
+            const response = await locationService.getPreferences(userId);
             if (response.data) {
                 setPreferences(prev => ({ ...prev, ...response.data }));
             }
@@ -49,11 +58,12 @@ export default function TrackingScreen({ navigation }) {
     };
 
     const togglePreference = async (key) => {
+        if (!userId) return;
         const newPreferences = { ...preferences, [key]: !preferences[key] };
         setPreferences(newPreferences);
 
         try {
-            await locationService.updatePreferences({ userId: USER_ID, preferences: newPreferences });
+            await locationService.updatePreferences({ userId: userId, preferences: newPreferences });
         } catch (error) {
             Alert.alert("Error", "Failed to save preference.");
             setPreferences(preferences);
@@ -81,10 +91,11 @@ export default function TrackingScreen({ navigation }) {
     };
 
     const updateLocation = async () => {
+        if (!userId) return;
         try {
             const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
             const payload = {
-                userId: USER_ID,
+                userId: userId,
                 location: { lat: location.coords.latitude, lon: location.coords.longitude },
                 riskScore: 0
             };
@@ -99,6 +110,28 @@ export default function TrackingScreen({ navigation }) {
         if (!preferences.activeTracking) return 'Offline';
         const interval = preferences.highRiskFrequency ? '1m' : '15m';
         return `Active Tracking: Online (${interval} Interval)`;
+    };
+
+    const shareOfflineLocation = async () => {
+        setLoading(true);
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert("Permission Denied", "Location permission is required.");
+                return;
+            }
+
+            const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+            const { latitude, longitude } = location.coords;
+            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+            const message = `I am sharing my offline location. Track me here: ${mapUrl}`;
+            
+            Linking.openURL(`sms:?body=${encodeURIComponent(message)}`);
+        } catch (error) {
+            Alert.alert("Error", "Could not get location.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -160,6 +193,12 @@ export default function TrackingScreen({ navigation }) {
                             title="Active Tracking"
                             desc="Real-time location sharing and tracking status"
                             onPress={() => navigation.navigate('ActiveTracking')}
+                        />
+                         <TrackingItem
+                            icon="message-processing"
+                            title="Share Offline Location"
+                            desc="Send location via SMS when internet is unavailable"
+                            onPress={shareOfflineLocation}
                         />
                     </View>
                 )}

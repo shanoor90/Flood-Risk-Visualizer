@@ -50,6 +50,7 @@ import SafetyCircleScreen from './src/screens/SafetyCircleScreen';
 import FamilyRelationshipsScreen from './src/screens/FamilyRelationshipsScreen';
 import RealTimeMonitoringScreen from './src/screens/RealTimeMonitoringScreen';
 import AutomaticAlertsScreen from './src/screens/AutomaticAlertsScreen';
+import JoinFamilyScreen from './src/screens/JoinFamilyScreen';
 
 const Stack = createStackNavigator();
 
@@ -92,6 +93,7 @@ export default function App() {
           <Stack.Screen name="FamilyRelationships" component={FamilyRelationshipsScreen} />
           <Stack.Screen name="RealTimeMonitoring" component={RealTimeMonitoringScreen} />
           <Stack.Screen name="AutomaticAlerts" component={AutomaticAlertsScreen} />
+          <Stack.Screen name="JoinFamily" component={JoinFamilyScreen} />
         </Stack.Navigator>
       </View>
       <StatusBar style="light" />

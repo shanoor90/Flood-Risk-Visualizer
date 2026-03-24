@@ -3,6 +3,8 @@ const router = express.Router();
 const familyController = require('../controllers/familyController');
 
 router.post('/add', familyController.addFamilyMember);
+router.post('/invite', familyController.createInvite);
+router.post('/invite/accept', familyController.acceptInvite);
 router.delete('/:userId/:memberId', familyController.deleteFamilyMember);
 router.get('/risk/:userId', familyController.getFamilyRisk);
 

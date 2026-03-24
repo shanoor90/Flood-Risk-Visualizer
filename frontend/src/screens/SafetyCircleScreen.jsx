@@ -10,11 +10,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import * as Battery from 'expo-battery';
 
-// Mock User ID for now (ideally from Auth context)
-const USER_ID = "test_user_123";
+// Mock User ID remove, use authService
+import { authService } from '../services/authService';
+
 const LINKED_MEMBER_KEY = "linked_family_member_id";
 
 export default function SafetyCircleScreen({ navigation }) {
+    const [userId, setUserId] = useState(null);
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [linkedMemberId, setLinkedMemberId] = useState(null);
@@ -29,13 +31,30 @@ export default function SafetyCircleScreen({ navigation }) {
     const locationSubscription = useRef(null);
 
     useEffect(() => {
-        checkLinkedMember();
-        fetchFamilyData();
+        const user = authService.getCurrentUser();
+        if (user) {
+            setUserId(user.uid);
+            checkLinkedMember();
+        } else {
+            // Fallback for dev/testing if auth persistence is flaky, or redirect
+            // For now, let's assume we might be in a dev flow and try to handle it gracefully
+            // or just wait. 
+            // setUserId("test_user_fallback"); 
+        }
 
         return () => {
             stopTracking();
         };
     }, []);
+
+    useEffect(() => {
+        if (userId) {
+            fetchFamilyData();
+            // Poll for updates
+            const interval = setInterval(fetchFamilyData, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [userId]);
 
     // Check if this device is already linked to a member check
     const checkLinkedMember = async () => {
@@ -51,66 +70,88 @@ export default function SafetyCircleScreen({ navigation }) {
     };
 
     const fetchFamilyData = async () => {
+        if (!userId) return;
         try {
-            const response = await familyService.getFamilyRisk(USER_ID);
+            const response = await familyService.getFamilyRisk(userId);
             setMembers(response.data || []);
         } catch (error) {
             console.error("Error fetching family:", error);
-            Alert.alert("Error", "Could not load family circle.");
+            Alert.alert("Error", `Could not load family circle: ${error.message}`);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleAddMember = async () => {
-        if (!newMemberName || !newMemberPhone || !newMemberRelation) {
-            Alert.alert("Missing Info", "Please fill all fields.");
+    const handleCreateInvite = async () => {
+        if (!userId) return;
+        if (!newMemberName || !newMemberRelation) {
+            Alert.alert("Missing Info", "Please enter Name and Relation.");
             return;
         }
 
+        setLoading(true);
         try {
-            await familyService.addMember({
-                userId: USER_ID,
-                memberId: newMemberPhone,
-                memberName: newMemberName,
-                phoneNumber: newMemberPhone, 
-                relation: newMemberRelation
-            });
-            Alert.alert("Success", "Family member added!");
+            const { data } = await inviteService.createInvite(userId, newMemberName, newMemberRelation);
+            const code = data.code;
+            
             setShowAddForm(false);
             setNewMemberName('');
-            setNewMemberPhone('');
             setNewMemberRelation('');
-            fetchFamilyData(); 
+            setNewMemberPhone(''); // Not strictly needed for invite gen but good to clear
+
+            Alert.alert(
+                "Invite Created!",
+                `Share this code with ${newMemberName}: ${code}`,
+                [
+                    { text: "Done" },
+                    { 
+                        text: "Send Message", 
+                        onPress: () => {
+                            const message = `Join my Safety Circle on FloodVisualizer! Open the app and enter code: ${code}`;
+                            Linking.openURL(`sms:?body=${encodeURIComponent(message)}`);
+                        }
+                    }
+                ]
+            );
+            // We ideally want to show a "Pending" member here, but our current backend 
+            // implementation of `createInvite` doesn't add a "Pending" doc to `users/{id}/family`.
+            // It just creates an invite. User appears only after they accept.
+            // We could improve this later to show pending invites.
         } catch (error) {
-            Alert.alert("Error", "Failed to add member.");
+            Alert.alert("Error", "Failed to create invite.");
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleLinkDevice = async (memberId) => {
-        Alert.alert(
-            "Link Device",
-            "Is this YOUR phone? Linking will enable real-time location and battery tracking for this member.",
-            [
-                { text: "Cancel", style: "cancel" },
-                { 
-                    text: "Yes, This is Me", 
-                    onPress: async () => {
-                        await AsyncStorage.setItem(LINKED_MEMBER_KEY, memberId);
-                        setLinkedMemberId(memberId);
-                        startTracking(memberId);
-                        Alert.alert("Device Linked", "You are now tracking as this member.");
-                    }
-                }
-            ]
-        );
-    };
+    // --- REAL-TIME TRACKING (SELF) ---
+    // This allows THIS device to act as a tracked entity (e.g. if I am a member of someone else's circle)
+    // Or if I just want to contribute my location to the system.
+    const startSelfTracking = async () => {
+        if (trackingActive) return;
 
-    const handleUnlinkDevice = async () => {
-        await AsyncStorage.removeItem(LINKED_MEMBER_KEY);
-        setLinkedMemberId(null);
-        stopTracking();
-        Alert.alert("Device Unlinked", "Tracking stopped.");
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert("Permission Denied", "Location permission is required.");
+            return;
+        }
+
+        setTrackingActive(true);
+        locationSubscription.current = await Location.watchPositionAsync(
+            { accuracy: Location.Accuracy.High, timeInterval: 10000, distanceInterval: 10 },
+            async (loc) => {
+                try {
+                    const batteryLevel = await Battery.getBatteryLevelAsync();
+                    await locationService.updateLocation({
+                        userId: userId, // Tracking MYSELF
+                        location: { lat: loc.coords.latitude, lon: loc.coords.longitude },
+                        riskScore: 0,
+                        batteryLevel: batteryLevel,
+                        gpsStatus: "Active"
+                    });
+                } catch (error) { console.log("Tracking error:", error); }
+            }
+        );
     };
 
     // --- REAL-TIME TRACKING LOGIC ---
@@ -241,19 +282,31 @@ export default function SafetyCircleScreen({ navigation }) {
                     </Text>
                 </View>
 
-                 {/* Add Member Button */}
-                 <TouchableOpacity
-                    style={styles.addBtn}
-                    onPress={() => setShowAddForm(!showAddForm)}
-                >
-                    <MaterialCommunityIcons name={showAddForm ? "close" : "plus"} size={24} color="#fff" />
-                    <Text style={styles.addBtnText}>{showAddForm ? "Cancel" : "Add Member"}</Text>
-                </TouchableOpacity>
+                {/* Action Buttons */}
+                <View style={styles.actionRow}>
+                    <TouchableOpacity
+                        style={styles.addBtn}
+                        onPress={() => setShowAddForm(!showAddForm)}
+                    >
+                        <MaterialCommunityIcons name={showAddForm ? "close" : "account-plus"} size={24} color="#fff" />
+                        <Text style={styles.addBtnText}>{showAddForm ? "Cancel" : "Invite Member"}</Text>
+                    </TouchableOpacity>
 
-                {/* Add Member Form */}
+                    <TouchableOpacity
+                        style={[styles.addBtn, { backgroundColor: '#0ea5e9' }]}
+                        onPress={() => navigation.navigate('JoinFamily')}
+                    >
+                        <MaterialCommunityIcons name="login" size={24} color="#fff" />
+                        <Text style={styles.addBtnText}>Join a Circle</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Invite Member Form */}
                 {showAddForm && (
                      <View style={styles.addForm}>
-                        <Text style={styles.formHeader}>Invite via Phone or Circle Code</Text>
+                        <Text style={styles.formHeader}>Create Security Invite</Text>
+                        <Text style={styles.formSubHeader}>Generate a code to share with your family member.</Text>
+                        
                         <TextInput
                             style={styles.input}
                             placeholder="Name (e.g. Mom)"
@@ -262,19 +315,12 @@ export default function SafetyCircleScreen({ navigation }) {
                         />
                         <TextInput
                             style={styles.input}
-                            placeholder="Phone Number / ID"
-                            keyboardType="phone-pad"
-                            value={newMemberPhone}
-                            onChangeText={setNewMemberPhone}
-                        />
-                        <TextInput
-                            style={styles.input}
                             placeholder="Relation (e.g. Parent, Sibling)"
                             value={newMemberRelation}
                             onChangeText={setNewMemberRelation}
                         />
-                        <TouchableOpacity style={styles.submitBtn} onPress={handleAddMember}>
-                            <Text style={styles.submitBtnText}>Add Member</Text>
+                        <TouchableOpacity style={styles.submitBtn} onPress={handleCreateInvite}>
+                            <Text style={styles.submitBtnText}>Generate Invite Code</Text>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -307,11 +353,13 @@ const styles = StyleSheet.create({
     trackingBanner: { backgroundColor: '#16a34a', padding: 12, marginBottom: 16, borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
     trackingText: { color: 'white', fontWeight: 'bold' },
 
-    addBtn: { flexDirection: 'row', backgroundColor: '#16a34a', padding: 14, borderRadius: 12, justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 16, elevation: 2 },
+    actionRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+    addBtn: { flex: 1, flexDirection: 'row', backgroundColor: '#16a34a', padding: 14, borderRadius: 12, justifyContent: 'center', alignItems: 'center', gap: 8, elevation: 2 },
     addBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 
     addForm: { backgroundColor: '#fff', padding: 16, borderRadius: 12, marginBottom: 20, borderWidth: 1, borderColor: '#bbf7d0' },
-    formHeader: { fontSize: 14, fontWeight: 'bold', marginBottom: 12, color: '#15803d' },
+    formHeader: { fontSize: 16, fontWeight: 'bold', marginBottom: 4, color: '#15803d' },
+    formSubHeader: { fontSize: 13, color: '#64748b', marginBottom: 16 },
     input: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 14 },
     submitBtn: { backgroundColor: '#15803d', padding: 12, borderRadius: 8, alignItems: 'center' },
     submitBtnText: { color: '#fff', fontWeight: 'bold' },
