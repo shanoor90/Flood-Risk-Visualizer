@@ -250,9 +250,18 @@ export default function SafetyCircleScreen({ navigation }) {
                         <MaterialCommunityIcons name="account" size={24} color={statusColor} />
                     </View>
                     <View>
-                        <Text style={styles.memberName}>{item.memberName} {isLinked && "(You)"}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <Text style={styles.memberName}>{item.memberName} {isLinked && "(You)"}</Text>
+                            {item.status === 'pending' && (
+                                <View style={styles.pendingTag}>
+                                    <Text style={styles.pendingTagText}>Invited</Text>
+                                </View>
+                            )}
+                        </View>
                         <Text style={{ fontSize: 12, color: '#64748b' }}>
-                            {item.batteryLevel ? `🔋 ${item.batteryLevel}%` : 'No Battery Data'}
+                            {item.status === 'pending' 
+                                ? `Code: ${item.inviteCode}` 
+                                : (item.batteryLevel ? `🔋 ${item.batteryLevel}%` : 'No Battery Data')}
                         </Text>
                          <View style={{flexDirection:'row', alignItems:'center', marginTop: 4}}>
                              {item.gpsStatus === 'Lost' && <MaterialCommunityIcons name="satellite-variant" size={12} color="#64748b" style={{marginRight:4}}/>}
@@ -399,6 +408,9 @@ const styles = StyleSheet.create({
     actions: { flexDirection: 'row', gap: 8 },
     actionBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
     linkText: { fontSize: 12, fontWeight: 'bold', color: '#0284c7' },
+    
+    pendingTag: { backgroundColor: '#fef3c7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: '#fde68a' },
+    pendingTagText: { fontSize: 10, color: '#92400e', fontWeight: 'bold', textTransform: 'uppercase' },
     
     emptyText: { textAlign: 'center', color: '#9ca3af', fontStyle: 'italic', marginVertical: 20 },
 });

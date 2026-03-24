@@ -8,6 +8,21 @@ export default function JoinFamilyScreen({ navigation }) {
     const [code, setCode] = useState('');
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
+    const [inviteDetail, setInviteDetail] = useState(null);
+
+    const checkCode = async (val) => {
+        setCode(val);
+        if (val.length === 6) {
+            try {
+                const response = await inviteService.getInviteDetail(val);
+                setInviteDetail(response.data);
+            } catch (e) {
+                setInviteDetail(null);
+            }
+        } else {
+            setInviteDetail(null);
+        }
+    };
 
     const handleJoin = async () => {
         if (code.length !== 6) {
@@ -56,9 +71,18 @@ export default function JoinFamilyScreen({ navigation }) {
                         keyboardType="number-pad"
                         maxLength={6}
                         value={code}
-                        onChangeText={setCode}
+                        onChangeText={checkCode}
                     />
                 </View>
+
+                {inviteDetail && (
+                    <View style={styles.previewCard}>
+                        <Text style={styles.previewText}>
+                            Joining <Text style={{fontWeight:'bold'}}>{inviteDetail.inviterName}'s</Text> circle 
+                            as <Text style={{fontWeight:'bold', color: '#16a34a'}}>{inviteDetail.relation}</Text>
+                        </Text>
+                    </View>
+                )}
                 
                  <View style={styles.inputContainer}>
                     <MaterialCommunityIcons name="phone" size={24} color="#64748b" style={styles.inputIcon} />
@@ -107,5 +131,20 @@ const styles = StyleSheet.create({
     buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
     
     cancelLink: { marginTop: 20, padding: 10 },
-    cancelText: { color: '#64748b', fontSize: 16 }
+    cancelText: { color: '#64748b', fontSize: 16 },
+
+    previewCard: {
+        backgroundColor: '#f0fdf4',
+        padding: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#dcfce7',
+        marginBottom: 20,
+        width: '100%',
+    },
+    previewText: {
+        fontSize: 14,
+        color: '#166534',
+        textAlign: 'center',
+    }
 });

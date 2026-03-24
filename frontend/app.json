@@ -1,7 +1,7 @@
 {
     "expo": {
-        "name": "Front End",
-        "slug": "front-end",
+        "name": "Flood Risk Visualizer",
+        "slug": "flood-risk-visualizer",
         "version": "1.0.0",
         "orientation": "portrait",
         "userInterfaceStyle": "light",

@@ -145,15 +145,48 @@ export const inviteService = {
         try {
             const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit code
             const inviteRef = doc(db, 'invites', code);
+            
+            // 1. Create the public invite document
             await setDoc(inviteRef, {
                 inviterId,
-                memberName, // The name the inviter set for this person (e.g. "Mom")
+                memberName, 
                 relation,
                 createdAt: serverTimestamp()
             });
+
+            // 2. Add a "Pending" entry to the inviter's own family collection 
+            // so they see the person in their list immediately.
+            // We use the code as a temporary ID.
+            await setDoc(doc(db, 'users', inviterId, 'family', `pending_${code}`), {
+                memberId: `pending_${code}`,
+                memberName: memberName,
+                relation: relation,
+                status: 'pending',
+                inviteCode: code,
+                addedAt: serverTimestamp()
+            });
+
             return { data: { code } };
         } catch (error) {
             console.error("Invite creation error:", error);
+            throw error;
+        }
+    },
+
+    // 🔍 Get Invite Details (Preview)
+    getInviteDetail: async (code) => {
+        try {
+            const inviteSnap = await getDoc(doc(db, 'invites', code));
+            if (!inviteSnap.exists()) throw new Error("Invalid code");
+            
+            const data = inviteSnap.data();
+            // Fetch inviter's name for a better UI
+            const inviterSnap = await getDoc(doc(db, 'users', data.inviterId));
+            const inviterName = inviterSnap.exists() ? inviterSnap.data().username : "Someone";
+            
+            return { data: { ...data, inviterName } };
+        } catch (error) {
+            console.error("Invite detail error:", error);
             throw error;
         }
     },
@@ -172,14 +205,21 @@ export const inviteService = {
             const { inviterId, memberName, relation } = inviteData;
 
             // 1. Add this user to the Inviter's Family List
-            // We use the User's Real ID as the document ID so we can track them easily later
             await setDoc(doc(db, 'users', inviterId, 'family', userId), {
-                memberId: userId, // CRITICAL: This links to the actual user document/location
+                memberId: userId, 
                 memberName: memberName,
                 relation: relation,
                 phoneNumber: userPhone,
+                status: 'joined',
                 joinedAt: serverTimestamp()
             });
+
+            // 2. Remove the temporary "Pending" record if it exists
+            try {
+                await deleteDoc(doc(db, 'users', inviterId, 'family', `pending_${code}`));
+            } catch (e) {
+                console.log("No pending record found to delete, skipping.");
+            }
 
             // 2. Delete the invite (one-time use)
             await deleteDoc(inviteRef);
