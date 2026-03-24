@@ -49,12 +49,6 @@ export default function SurvivalGuideScreen({ navigation }) {
                         onPress={() => navigation.navigate('EmergencyDirectory')}
                     />
 
-                    <GuideCard 
-                        icon="wifi-off" 
-                        title="Internet Offline"
-                        desc="Fully accessible without internet connectivity"
-                        onPress={() => navigation.navigate('OfflineMode')}
-                    />
                 </View>
 
                 {/* Footer Tip Section */}

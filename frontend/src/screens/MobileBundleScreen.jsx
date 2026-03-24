@@ -38,16 +38,6 @@ export default function MobileBundleScreen({ navigation }) {
                             desc="Comprehensive flood preparedness checklists." 
                         />
                         <InfoItem 
-                            icon="run-fast" 
-                            title="Evacuation Procedures" 
-                            desc="Step-by-step emergency evacuation procedures." 
-                        />
-                        <InfoItem 
-                            icon="water-check-outline" 
-                            title="Safe Water & Sanitation" 
-                            desc="Guidelines for safe water use and sanitation." 
-                        />
-                        <InfoItem 
                             icon="bag-checked" 
                             title="Emergency Supplies" 
                             desc="Recommendations for critical emergency supply kits." 

@@ -53,7 +53,6 @@ import ActiveTrackingScreen from './src/screens/ActiveTrackingScreen';
 import MobileBundleScreen from './src/screens/MobileBundleScreen';
 import MedicalGuidanceScreen from './src/screens/MedicalGuidanceScreen';
 import EmergencyDirectoryScreen from './src/screens/EmergencyDirectoryScreen';
-import OfflineModeScreen from './src/screens/OfflineModeScreen';
 import SafetyCircleScreen from './src/screens/SafetyCircleScreen';
 import RealTimeMonitoringScreen from './src/screens/RealTimeMonitoringScreen';
 import AutomaticAlertsScreen from './src/screens/AutomaticAlertsScreen';
@@ -120,7 +119,6 @@ export default function App() {
               <Stack.Screen name="MobileBundle" component={MobileBundleScreen} />
               <Stack.Screen name="MedicalGuidance" component={MedicalGuidanceScreen} />
               <Stack.Screen name="EmergencyDirectory" component={EmergencyDirectoryScreen} />
-              <Stack.Screen name="OfflineMode" component={OfflineModeScreen} />
               <Stack.Screen name="SafetyCircle" component={SafetyCircleScreen} />
               <Stack.Screen name="RealTimeMonitoring" component={RealTimeMonitoringScreen} />
               <Stack.Screen name="AutomaticAlerts" component={AutomaticAlertsScreen} />
