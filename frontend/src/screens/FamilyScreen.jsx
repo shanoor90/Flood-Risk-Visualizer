@@ -16,7 +16,9 @@ export default function FamilyScreen({ navigation }) {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const userId = "test_user_123"; // TODO: Get from auth
+            const user = authService.getCurrentUser();
+            if (!user) return;
+            const userId = user.uid;
             const response = await familyService.getFamilyRisk(userId);
             const members = response.data || [];
             setFamilyData(members);

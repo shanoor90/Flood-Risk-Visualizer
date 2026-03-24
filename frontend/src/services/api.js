@@ -141,8 +141,9 @@ export const familyService = {
 
 export const inviteService = {
     // 🎲 Create Invite Code
-    createInvite: async (inviterId, memberName, relation) => {
+    createInvite: async (inviterId, memberName, relation, phoneNumber) => {
         try {
+            const data = { inviterId, memberName, relation, phoneNumber };
             const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit code
             const inviteRef = doc(db, 'invites', code);
             
@@ -151,6 +152,7 @@ export const inviteService = {
                 inviterId,
                 memberName, 
                 relation,
+                phoneNumber: data.phoneNumber || null,
                 createdAt: serverTimestamp()
             });
 
@@ -161,6 +163,7 @@ export const inviteService = {
                 memberId: `pending_${code}`,
                 memberName: memberName,
                 relation: relation,
+                phoneNumber: data.phoneNumber || null,
                 status: 'pending',
                 inviteCode: code,
                 addedAt: serverTimestamp()

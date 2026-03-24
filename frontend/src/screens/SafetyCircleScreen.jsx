@@ -113,33 +113,31 @@ export default function SafetyCircleScreen({ navigation }) {
 
         setLoading(true);
         try {
-            const { data } = await inviteService.createInvite(userId, newMemberName, newMemberRelation);
+            const { data } = await inviteService.createInvite(userId, newMemberName, newMemberRelation, newMemberPhone);
             const code = data.code;
             
             setShowAddForm(false);
             setNewMemberName('');
             setNewMemberRelation('');
-            setNewMemberPhone(''); // Not strictly needed for invite gen but good to clear
+            setNewMemberPhone('');
 
             Alert.alert(
                 "Invite Created!",
-                `Share this code with ${newMemberName}: ${code}`,
+                `Share this code with ${newMemberName}: ${code}\n\nA "Pending" member has been added to your list. They will appear as "Joined" once they accept.`,
                 [
                     { text: "Done" },
                     { 
-                        text: "Send Message", 
+                        text: "Send SMS", 
                         onPress: () => {
-                            const message = `Join my Safety Circle on FloodVisualizer! Open the app and enter code: ${code}`;
-                            Linking.openURL(`sms:?body=${encodeURIComponent(message)}`);
+                            const message = `Join my Safety Circle on FloodVisualizer! Open the app and enter code: ${code}\n\nDownload: https://floodvisualizer.page.link/app`;
+                            const phoneUrl = Platform.OS === 'ios' ? `sms:${newMemberPhone}&body=${encodeURIComponent(message)}` : `sms:${newMemberPhone}?body=${encodeURIComponent(message)}`;
+                            Linking.openURL(phoneUrl);
                         }
                     }
                 ]
             );
-            // We ideally want to show a "Pending" member here, but our current backend 
-            // implementation of `createInvite` doesn't add a "Pending" doc to `users/{id}/family`.
-            // It just creates an invite. User appears only after they accept.
-            // We could improve this later to show pending invites.
         } catch (error) {
+            console.error("Invite error:", error);
             Alert.alert("Error", "Failed to create invite.");
         } finally {
             setLoading(false);
@@ -349,6 +347,13 @@ export default function SafetyCircleScreen({ navigation }) {
                             placeholder="Relation (e.g. Parent, Sibling)"
                             value={newMemberRelation}
                             onChangeText={setNewMemberRelation}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Phone Number (e.g. +9477...)"
+                            value={newMemberPhone}
+                            onChangeText={setNewMemberPhone}
+                            keyboardType="phone-pad"
                         />
                         <TouchableOpacity style={styles.submitBtn} onPress={handleCreateInvite}>
                             <Text style={styles.submitBtnText}>Generate Invite Code</Text>
