@@ -1,5 +1,7 @@
+import React from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../services/authService';
-import { Alert } from 'react-native';
 
 export default function Navbar() {
   const handleLogout = () => {

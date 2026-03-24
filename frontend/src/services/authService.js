@@ -28,6 +28,9 @@ export const authService = {
         createdAt: serverTimestamp(),
       });
 
+      // 🚪 Sign out immediately to enforce Signup -> Login flow as requested by user
+      await signOut(auth);
+
       return user;
     } catch (error) {
       if (error.code === 'permission-denied' || error.message.includes('permission')) {

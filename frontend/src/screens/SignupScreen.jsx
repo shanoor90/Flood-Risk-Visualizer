@@ -30,8 +30,11 @@ export default function SignupScreen({ navigation }) {
       try {
         await authService.signup(email, password, username);
         setLoading(false);
-        // Alert.alert('Success', 'Account created successfully!'); 
-        // Note: App.js will automatically redirect to Dashboard now
+        Alert.alert(
+          'Account Created', 
+          'Your account has been created successfully! Please log in with your credentials.',
+          [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+        );
       } catch (error) {
         setLoading(false);
         Alert.alert('Signup Error', error.message);
