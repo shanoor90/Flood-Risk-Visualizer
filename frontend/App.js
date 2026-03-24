@@ -55,7 +55,6 @@ import MedicalGuidanceScreen from './src/screens/MedicalGuidanceScreen';
 import EmergencyDirectoryScreen from './src/screens/EmergencyDirectoryScreen';
 import OfflineModeScreen from './src/screens/OfflineModeScreen';
 import SafetyCircleScreen from './src/screens/SafetyCircleScreen';
-import FamilyRelationshipsScreen from './src/screens/FamilyRelationshipsScreen';
 import RealTimeMonitoringScreen from './src/screens/RealTimeMonitoringScreen';
 import AutomaticAlertsScreen from './src/screens/AutomaticAlertsScreen';
 import JoinFamilyScreen from './src/screens/JoinFamilyScreen';
@@ -123,7 +122,6 @@ export default function App() {
               <Stack.Screen name="EmergencyDirectory" component={EmergencyDirectoryScreen} />
               <Stack.Screen name="OfflineMode" component={OfflineModeScreen} />
               <Stack.Screen name="SafetyCircle" component={SafetyCircleScreen} />
-              <Stack.Screen name="FamilyRelationships" component={FamilyRelationshipsScreen} />
               <Stack.Screen name="RealTimeMonitoring" component={RealTimeMonitoringScreen} />
               <Stack.Screen name="AutomaticAlerts" component={AutomaticAlertsScreen} />
               <Stack.Screen name="JoinFamily" component={JoinFamilyScreen} />

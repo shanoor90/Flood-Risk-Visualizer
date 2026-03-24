@@ -155,12 +155,6 @@ export default function FamilyScreen({ navigation }) {
                         desc="View family locations & flood map"
                         onPress={() => navigation.navigate('RealTimeMonitoring')}
                     />
-                     <FeatureCard
-                        icon="database-outline"
-                        title="Family Relationships"
-                        desc="Manage relationship data"
-                        onPress={() => navigation.navigate('FamilyRelationships')}
-                    />
                 </View>
 
                 <View style={styles.infoCard}>
