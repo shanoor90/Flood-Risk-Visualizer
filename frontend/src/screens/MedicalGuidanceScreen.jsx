@@ -36,31 +36,37 @@ export default function MedicalGuidanceScreen({ navigation }) {
                             icon="bandage" 
                             title="Cuts & Wounds" 
                             desc="Treatment for minor cuts and open wounds to prevent infection." 
+                            onPress={() => navigation.navigate('CutsWounds')}
                         />
                         <InfoItem 
                             icon="snowflake" 
                             title="Hypothermia" 
                             desc="Managing body temperature in cold water exposure scenarios." 
+                            onPress={() => navigation.navigate('Hypothermia')}
                         />
                         <InfoItem 
                             icon="water-alert" 
                             title="Infection Prevention" 
                             desc="Preventing waterborne infections and maintaining hygiene." 
+                            onPress={() => navigation.navigate('InfectionPrevention')}
                         />
                         <InfoItem 
                             icon="bone" 
                             title="Fractures & Sprains" 
                             desc="How to handle and stabilize fractures and severe sprains." 
+                            onPress={() => navigation.navigate('FracturesSprains')}
                         />
                         <InfoItem 
                             icon="human-handsup" 
                             title="Basic CPR" 
                             desc="Guidelines for Cardio-Pulmonary Resuscitation if required." 
+                            onPress={() => navigation.navigate('BasicCPR')}
                         />
                         <InfoItem 
                             icon="emoticon-confused-outline" 
                             title="Dehydration" 
                             desc="Identifying early and advanced dehydration symptoms." 
+                            onPress={() => navigation.navigate('Dehydration')}
                         />
                     </View>
 
@@ -76,15 +82,16 @@ export default function MedicalGuidanceScreen({ navigation }) {
     );
 }
 
-function InfoItem({ icon, title, desc }) {
+function InfoItem({ icon, title, desc, onPress }) {
     return (
-        <View style={styles.item}>
+        <TouchableOpacity style={styles.item} onPress={onPress} activeOpacity={0.7}>
             <MaterialCommunityIcons name={icon} size={24} color="#059669" />
             <View style={styles.textContainer}>
                 <Text style={styles.itemTitle}>{title}</Text>
                 <Text style={styles.itemDesc}>{desc}</Text>
             </View>
-        </View>
+            <MaterialCommunityIcons name="chevron-right" size={20} color="#94a3b8" />
+        </TouchableOpacity>
     );
 }
 
