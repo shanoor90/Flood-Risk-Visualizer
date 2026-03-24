@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import DetailLayout from '../components/DetailLayout';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
