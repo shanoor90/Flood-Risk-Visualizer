@@ -5,6 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 import * as Location from 'expo-location';
 import DetailLayout from '../components/DetailLayout';
+import { familyService } from '../services/api';
+import { authService } from '../services/authService';
 
 const CONNECT_MEMBERS_KEY = "connect_members_list";
 
@@ -15,6 +17,8 @@ export default function ConnectScreen({ navigation }) {
     const [connectName, setConnectName] = useState('');
     const [connectPhone, setConnectPhone] = useState('');
     const [connectRelation, setConnectRelation] = useState('');
+    const [homeLocation, setHomeLocation] = useState(null);
+    const [fetchingLocation, setFetchingLocation] = useState(false);
 
     useEffect(() => {
         loadConnectMembers();
@@ -32,22 +36,47 @@ export default function ConnectScreen({ navigation }) {
             Alert.alert("Missing Info", "Please enter Name, Relation, and Phone.");
             return;
         }
+        const user = authService.getCurrentUser();
         const newMember = { 
             id: Date.now().toString(), 
             name: connectName, 
             phone: connectPhone, 
-            relation: connectRelation 
+            relation: connectRelation,
+            homeLocation: homeLocation
         };
         const updatedMembers = [...connectMembers, newMember];
         try {
+            // 1. Save locally for deep offline capabilities
             await AsyncStorage.setItem(CONNECT_MEMBERS_KEY, JSON.stringify(updatedMembers));
             setConnectMembers(updatedMembers);
+            
+            // 2. Push to backend if Online
+            if (user) {
+                await familyService.addConnectMember(user.uid, newMember).catch(e => console.log("Silent fallback, couldn't reach DB"));
+            }
+
             setShowAddConnect(false);
             setConnectName('');
             setConnectPhone('');
             setConnectRelation('');
-            Alert.alert("Saved", "Local connection added successfully.");
+            setHomeLocation(null);
+            Alert.alert("Saved", "Connection added successfully.");
         } catch (error) { Alert.alert("Error", "Could not save connection."); }
+    };
+
+    const fetchCurrentLocationForHome = async () => {
+        setFetchingLocation(true);
+        try {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') { Alert.alert("Permission denied", "Need location to set Home."); return; }
+            let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+            setHomeLocation({ lat: location.coords.latitude, lon: location.coords.longitude });
+            Alert.alert("Location Seized", "Current GPS coordinates bound to this contact's Home Base.");
+        } catch (e) {
+            Alert.alert("Error", "Failed to get location.");
+        } finally {
+            setFetchingLocation(false);
+        }
     };
 
     const removeConnectMember = async (id) => {
@@ -126,6 +155,14 @@ export default function ConnectScreen({ navigation }) {
                         <TextInput style={styles.input} placeholder="Name (e.g. Dad)" value={connectName} onChangeText={setConnectName} />
                         <TextInput style={styles.input} placeholder="Relation (e.g. Parent)" value={connectRelation} onChangeText={setConnectRelation} />
                         <TextInput style={styles.input} placeholder="Phone Number" value={connectPhone} onChangeText={setConnectPhone} keyboardType="phone-pad" />
+                        
+                        <TouchableOpacity style={styles.locationBtn} onPress={fetchCurrentLocationForHome}>
+                            <MaterialCommunityIcons name={homeLocation ? "map-marker-check" : "map-marker-account"} size={20} color={homeLocation ? "#fff" : "#0369a1"} />
+                            <Text style={[styles.locationBtnText, homeLocation && {color: '#fff'}]}>
+                                {fetchingLocation ? "Acquiring..." : homeLocation ? "Home Location Pinned" : "Set Current Location as Home"}
+                            </Text>
+                        </TouchableOpacity>
+
                         <TouchableOpacity style={styles.submitBtn} onPress={saveConnectMember}>
                             <MaterialCommunityIcons name="content-save" size={20} color="#fff" />
                             <Text style={styles.submitBtnText}>Save Securely to Device</Text>
@@ -160,6 +197,10 @@ const styles = StyleSheet.create({
     formContainer: { backgroundColor: '#fff', padding: 20, borderRadius: 16, marginBottom: 24, borderWidth: 1, borderColor: '#e5e7eb', elevation: 2 },
     formHeader: { fontSize: 18, fontWeight: 'bold', marginBottom: 16, color: '#1f2937' },
     input: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, padding: 14, marginBottom: 12, fontSize: 16 },
+    
+    locationBtn: { flexDirection: 'row', backgroundColor: '#e0f2fe', padding: 14, borderRadius: 8, alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12, borderWidth: 1, borderColor: '#bae6fd' },
+    locationBtnText: { color: '#0369a1', fontWeight: 'bold', fontSize: 14 },
+    
     submitBtn: { flexDirection: 'row', backgroundColor: '#15803d', padding: 14, borderRadius: 8, alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 },
     submitBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 

@@ -161,3 +161,29 @@ exports.getInviteDetail = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// 6. Add Custom Connect Contact to Firestore
+exports.addConnectMember = async (req, res) => {
+    try {
+        const { userId, connectMember } = req.body;
+        // connectMember has: name, phone, relation, homeLocation: {lat, lon}
+        
+        const memberId = 'connect_' + Date.now().toString();
+        
+        await db.collection('users').doc(userId).collection('family').doc(memberId).set({
+            memberId: memberId, 
+            memberName: connectMember.name,
+            relation: connectMember.relation,
+            phoneNumber: connectMember.phone || null,
+            status: 'joined', // Auto-joined
+            isConnectContact: true,
+            homeLocation: connectMember.homeLocation || null,
+            joinedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        res.json({ message: "Connect Contact added to DB successfully!", memberId });
+    } catch (error) {
+        console.error("addConnectMember API Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+};

@@ -58,6 +58,8 @@ import SafetyCircleScreen from './src/screens/SafetyCircleScreen';
 import RealTimeMonitoringScreen from './src/screens/RealTimeMonitoringScreen';
 import AutomaticAlertsScreen from './src/screens/AutomaticAlertsScreen';
 import JoinFamilyScreen from './src/screens/JoinFamilyScreen';
+import BreadcrumbScreen from './src/screens/BreadcrumbScreen';
+import DigitalFlareScreen from './src/screens/DigitalFlareScreen';
 import DynamicGuidanceScreen from './src/screens/DynamicGuidanceScreen';
 import BreathingSpaceScreen from './src/screens/BreathingSpaceScreen';
 import ConnectScreen from './src/screens/ConnectScreen';
@@ -153,6 +155,8 @@ export default function App() {
               <Stack.Screen name="RealTimeMonitoring" component={RealTimeMonitoringScreen} />
               <Stack.Screen name="AutomaticAlerts" component={AutomaticAlertsScreen} />
               <Stack.Screen name="JoinFamily" component={JoinFamilyScreen} />
+              <Stack.Screen name="Breadcrumbs" component={BreadcrumbScreen} />
+              <Stack.Screen name="DigitalFlare" component={DigitalFlareScreen} />
               <Stack.Screen name="DynamicGuidance" component={DynamicGuidanceScreen} />
               <Stack.Screen name="BreathingSpace" component={BreathingSpaceScreen} />
               <Stack.Screen name="Connect" component={ConnectScreen} />

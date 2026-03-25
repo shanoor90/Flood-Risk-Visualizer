@@ -6,5 +6,6 @@ const familyController = require('../controllers/familyController');
 router.get('/:userId', familyController.getFamilyRisk);
 router.post('/invite', familyController.createInvite);
 router.post('/accept/:code', familyController.acceptInvite);
+router.post('/connect-member', familyController.addConnectMember);
 
 module.exports = router;

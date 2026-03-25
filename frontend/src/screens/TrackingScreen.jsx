@@ -207,6 +207,12 @@ export default function TrackingScreen({ navigation }) {
                             desc="Send location via SMS when internet is unavailable"
                             onPress={shareOfflineLocation}
                         />
+                        <TrackingItem
+                            icon="compass-outline"
+                            title="Offline Breadcrumbs & Compass"
+                            desc="Log your path locally and navigate to safety without internet"
+                            onPress={() => navigation.navigate('Breadcrumbs')}
+                        />
                     </View>
                 )}
 
