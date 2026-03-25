@@ -33,7 +33,7 @@ export default function SignupScreen({ navigation }) {
         Alert.alert(
           'Account Created', 
           'Your account has been created successfully! Please log in with your credentials.',
-          [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+          [{ text: 'OK', onPress: () => navigation.navigate('Login', { email }) }]
         );
       } catch (error) {
         setLoading(false);

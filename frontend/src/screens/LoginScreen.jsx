@@ -19,10 +19,16 @@ const loginBgImage = require('../../assets/images/login_bg.jpg');
 
 import { authService } from '../services/authService';
 
-export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState('');
+export default function LoginScreen({ navigation, route }) {
+  const [email, setEmail] = useState(route.params?.email || '');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    if (route.params?.email) {
+      setEmail(route.params.email);
+    }
+  }, [route.params?.email]);
 
   const handleLogin = async () => {
     if (email && password) {

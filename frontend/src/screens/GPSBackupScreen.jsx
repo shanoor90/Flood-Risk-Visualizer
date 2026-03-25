@@ -14,8 +14,8 @@ export default function GPSBackupScreen({ navigation }) {
         const generateMockHistory = () => {
             const data = [];
             const now = new Date();
-            for (let i = 11; i >= 0; i--) {
-                const time = new Date(now.getTime() - i * 10 * 60000);
+            for (let i = 7; i >= 0; i--) {
+                const time = new Date(now.getTime() - i * 15 * 60000);
                 // Random accuracy between 70% and 100%
                 const accuracy = Math.floor(Math.random() * 30) + 70;
                 data.push({
@@ -92,14 +92,14 @@ export default function GPSBackupScreen({ navigation }) {
                     </View>
                     <Text style={styles.mainTitle}>Secure GPS Storage</Text>
                     <Text style={styles.heroDesc}>
-                        The system performs periodic GPS location backups every 10 minutes to a secure server.
+                        The system performs periodic GPS location backups every 15 minutes to a secure server. This location can be shared with any family member for your safety.
                     </Text>
                 </View>
 
                 {/* Tracking History Diagram */}
                 <View style={styles.chartContainer}>
                     <Text style={styles.sectionHeader}>2-Hour Tracking History</Text>
-                    <Text style={styles.chartSubtext}>GPS Signal Accuracy over 10-min intervals</Text>
+                    <Text style={styles.chartSubtext}>GPS Signal Accuracy over 15-min intervals</Text>
                     
                     <View style={styles.barChartArea}>
                         {historyData.map((item, index) => (

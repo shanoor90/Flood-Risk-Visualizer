@@ -44,7 +44,14 @@ export const authService = {
   login: async (email, password) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return userCredential.user;
+      const user = userCredential.user;
+
+      // 🕒 Update last login time in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        lastLogin: serverTimestamp(),
+      }, { merge: true });
+
+      return user;
     } catch (error) {
       throw error;
     }

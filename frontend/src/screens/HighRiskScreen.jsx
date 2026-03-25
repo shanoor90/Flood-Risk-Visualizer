@@ -4,21 +4,26 @@ import DetailLayout from '../components/DetailLayout';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { locationService } from '../services/api';
 
-const USER_ID = "test_user_123";
+import { authService } from '../services/authService';
 
 export default function HighRiskScreen({ navigation }) {
     const [isHighRisk, setIsHighRisk] = useState(false);
+    const [userId, setUserId] = useState(null);
     // Pulse animation for the active indicator
     const pulseAnim = new Animated.Value(1);
 
     useEffect(() => {
-        fetchStatus();
+        const user = authService.getCurrentUser();
+        if (user) {
+            setUserId(user.uid);
+            fetchStatus(user.uid);
+        }
         startPulse();
     }, []);
 
-    const fetchStatus = async () => {
+    const fetchStatus = async (uid) => {
         try {
-            const response = await locationService.getPreferences(USER_ID);
+            const response = await locationService.getPreferences(uid);
             if (response.data) {
                 setIsHighRisk(response.data.highRiskFrequency);
             }
@@ -77,7 +82,7 @@ export default function HighRiskScreen({ navigation }) {
                     <Text style={styles.sectionHeader}>Why High-Risk Frequency?</Text>
                     <Text style={styles.introText}>
                         During high-risk flood conditions (e.g., heavy rainfall alerts, rising water levels, proximity to flood zones),
-                        the system automatically increases location update frequency.
+                        the system automatically increases location update frequency. This includes monitoring your battery percentage and risk score to provide accurate safety evaluations.
                     </Text>
 
                     <InfoItem
@@ -102,8 +107,8 @@ export default function HighRiskScreen({ navigation }) {
                     />
                     <InfoItem
                         icon="battery-charging-high"
-                        title="Battery Conservation"
-                        desc="When the risk level returns to normal, the system reduces tracking frequency to conserve battery life."
+                        title="Battery & Risk Monitoring"
+                        desc="The system tracks your battery percentage and evaluates your risk score to adjust frequency and prioritize SOS needs."
                     />
                 </View>
             </ScrollView>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -47,9 +47,9 @@ import FamilyScreen from './src/screens/FamilyScreen';
 import SurvivalGuideScreen from './src/screens/SurvivalGuideScreen';
 import GPSBackupScreen from './src/screens/GPSBackupScreen';
 import HighRiskScreen from './src/screens/HighRiskScreen';
-import TemporalRecordingScreen from './src/screens/TemporalRecordingScreen';
-import FamilyAccessScreen from './src/screens/FamilyAccessScreen';
-import ActiveTrackingScreen from './src/screens/ActiveTrackingScreen';
+// import TemporalRecordingScreen from './src/screens/TemporalRecordingScreen';
+// import FamilyAccessScreen from './src/screens/FamilyAccessScreen';
+// import ActiveTrackingScreen from './src/screens/ActiveTrackingScreen';
 import MobileBundleScreen from './src/screens/MobileBundleScreen';
 import MedicalGuidanceScreen from './src/screens/MedicalGuidanceScreen';
 import EmergencyDirectoryScreen from './src/screens/EmergencyDirectoryScreen';
@@ -101,6 +101,7 @@ export default function App() {
   if (initializing) {
     return (
       <View style={{ flex: 1, backgroundColor: '#121212', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#1e3a8a" />
         <StatusBar style="light" />
       </View>
     );
@@ -126,9 +127,9 @@ export default function App() {
               <Stack.Screen name="SurvivalGuide" component={SurvivalGuideScreen} />
               <Stack.Screen name="GPSBackup" component={GPSBackupScreen} />
               <Stack.Screen name="HighRisk" component={HighRiskScreen} />
-              <Stack.Screen name="TemporalRecording" component={TemporalRecordingScreen} />
-              <Stack.Screen name="FamilyAccess" component={FamilyAccessScreen} />
-              <Stack.Screen name="ActiveTracking" component={ActiveTrackingScreen} />
+              {/* <Stack.Screen name="TemporalRecording" component={TemporalRecordingScreen} /> */}
+              {/* <Stack.Screen name="FamilyAccess" component={FamilyAccessScreen} /> */}
+              {/* <Stack.Screen name="ActiveTracking" component={ActiveTrackingScreen} /> */}
               <Stack.Screen name="MobileBundle" component={MobileBundleScreen} />
               <Stack.Screen name="MedicalGuidance" component={MedicalGuidanceScreen} />
               <Stack.Screen name="EmergencyDirectory" component={EmergencyDirectoryScreen} />

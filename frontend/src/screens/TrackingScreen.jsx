@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, Switch, TouchableOpacity, Alert, ActivityIndicator, SafeAreaView, Platform, ScrollView, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Battery from 'expo-battery';
 import { locationService } from '../services/api';
 import { authService } from '../services/authService';
 import * as Location from 'expo-location';
@@ -12,10 +13,8 @@ export default function TrackingScreen({ navigation }) {
     const [preferences, setPreferences] = useState({
         gpsBackup: false,
         highRiskFrequency: false,
-        temporalRecording: false,
-        familyAccess: false,
-        activeTracking: true
     });
+    const [batteryLevel, setBatteryLevel] = useState(null);
 
     const trackingIntervalRef = useRef(null);
 
@@ -24,8 +23,39 @@ export default function TrackingScreen({ navigation }) {
         if (user) {
             setUserId(user.uid);
         }
-        return () => stopTracking(); // Cleanup on unmount
+        
+        // Battery Monitoring
+        const setupBattery = async () => {
+            const level = await Battery.getBatteryLevelAsync();
+            setBatteryLevel(level);
+            if (level < 0.15) {
+                promptSOS();
+            }
+        };
+        setupBattery();
+        const batterySubscription = Battery.addBatteryLevelListener(({ batteryLevel }) => {
+            setBatteryLevel(batteryLevel);
+            if (batteryLevel < 0.15) {
+                promptSOS();
+            }
+        });
+
+        return () => {
+            stopTracking();
+            batterySubscription.remove();
+        };
     }, []);
+
+    const promptSOS = () => {
+        Alert.alert(
+            "Low Battery",
+            "Your battery is below 15%. Would you like to send an SOS message with your location?",
+            [
+                { text: "No", style: "cancel" },
+                { text: "Send SOS", onPress: () => navigation.navigate('SOS') }
+            ]
+        );
+    };
 
     useEffect(() => {
         if (userId) {
@@ -35,13 +65,13 @@ export default function TrackingScreen({ navigation }) {
 
     useEffect(() => {
         if (!loading && userId) {
-            if (preferences.activeTracking) {
+            if (preferences.gpsBackup || preferences.highRiskFrequency) {
                 startTracking();
             } else {
                 stopTracking();
             }
         }
-    }, [preferences.activeTracking, preferences.highRiskFrequency, loading, userId]);
+    }, [preferences.gpsBackup, preferences.highRiskFrequency, loading, userId]);
 
     const fetchPreferences = async () => {
         if (!userId) return;
@@ -75,9 +105,9 @@ export default function TrackingScreen({ navigation }) {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
             Alert.alert("Permission Denied", "Location tracking requires permission.");
-            setPreferences(prev => ({ ...prev, activeTracking: false }));
             return;
         }
+        // GPS Backup = 15 mins (900000ms), High-Risk = 1 min (60000ms)
         const intervalMs = preferences.highRiskFrequency ? 60000 : 900000;
         updateLocation();
         trackingIntervalRef.current = setInterval(updateLocation, intervalMs);
@@ -94,10 +124,12 @@ export default function TrackingScreen({ navigation }) {
         if (!userId) return;
         try {
             const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+            const currentBattery = batteryLevel || await Battery.getBatteryLevelAsync();
             const payload = {
                 userId: userId,
                 location: { lat: location.coords.latitude, lon: location.coords.longitude },
-                riskScore: 0
+                riskScore: preferences.highRiskFrequency ? 75 : 10, // Mock risk score for now
+                batteryLevel: currentBattery
             };
             await locationService.updateLocation(payload);
             setLastSynced(new Date());
@@ -107,9 +139,9 @@ export default function TrackingScreen({ navigation }) {
     };
 
     const getStatusText = () => {
-        if (!preferences.activeTracking) return 'Offline';
-        const interval = preferences.highRiskFrequency ? '1m' : '15m';
-        return `Active Tracking: Online (${interval} Interval)`;
+        if (preferences.highRiskFrequency) return 'High-Risk Mode: Active (1m Sync)';
+        if (preferences.gpsBackup) return 'GPS Backup: Active (15m Sync)';
+        return 'Tracking: Offline';
     };
 
     const shareOfflineLocation = async () => {
@@ -167,32 +199,14 @@ export default function TrackingScreen({ navigation }) {
                         <TrackingItem
                             icon="database-sync"
                             title="GPS Backup"
-                            desc="Periodic GPS location backup to backend server"
+                            desc="Periodic GPS location backup to backend server (Every 15 mins)"
                             onPress={() => navigation.navigate('GPSBackup')}
                         />
                         <TrackingItem
                             icon="alert-decagram-outline"
                             title="High-Risk Frequency"
-                            desc="Increased tracking frequency during high-risk conditions"
+                            desc="Includes battery and risk score monitoring for evaluation"
                             onPress={() => navigation.navigate('HighRisk')}
-                        />
-                        <TrackingItem
-                            icon="history"
-                            title="Temporal Recording"
-                            desc="Timestamp recording for temporal analysis"
-                            onPress={() => navigation.navigate('TemporalRecording')}
-                        />
-                        <TrackingItem
-                            icon="account-group-outline"
-                            title="Family Access"
-                            desc="Family access to location history if contact is lost"
-                            onPress={() => navigation.navigate('FamilyAccess')}
-                        />
-                        <TrackingItem
-                            icon="map-marker-distance"
-                            title="Active Tracking"
-                            desc="Real-time location sharing and tracking status"
-                            onPress={() => navigation.navigate('ActiveTracking')}
                         />
                          <TrackingItem
                             icon="message-processing"
