@@ -109,18 +109,7 @@ export default function FamilyScreen({ navigation }) {
                 {/* Quick Actions */}
                 <Text style={[styles.sectionHeader, { marginTop: 24 }]}>Management Actions</Text>
                 <View style={styles.cardsContainer}>
-                    <FeatureCard
-                        icon="account-multiple-plus"
-                        title="Personalized Safety Circle"
-                        desc="Invite new family members & send tracking requests"
-                        onPress={() => navigation.navigate('SafetyCircle')}
-                    />
-                    <FeatureCard
-                        icon="account-arrow-right"
-                        title="Join a Safety Circle"
-                        desc="Enter an invite code to securely share your location"
-                        onPress={() => navigation.navigate('JoinFamily')}
-                    />
+
                     <FeatureCard
                         icon="map-search-outline"
                         title="Real-Time Monitoring"

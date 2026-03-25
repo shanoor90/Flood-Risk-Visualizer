@@ -12,7 +12,6 @@ export default function TrackingScreen({ navigation }) {
     const [lastSynced, setLastSynced] = useState(null);
     const [preferences, setPreferences] = useState({
         gpsBackup: false,
-        highRiskFrequency: false,
     });
     const [batteryLevel, setBatteryLevel] = useState(null);
 
@@ -65,13 +64,13 @@ export default function TrackingScreen({ navigation }) {
 
     useEffect(() => {
         if (!loading && userId) {
-            if (preferences.gpsBackup || preferences.highRiskFrequency) {
+            if (preferences.gpsBackup) {
                 startTracking();
             } else {
                 stopTracking();
             }
         }
-    }, [preferences.gpsBackup, preferences.highRiskFrequency, loading, userId]);
+    }, [preferences.gpsBackup, loading, userId]);
 
     const fetchPreferences = async () => {
         if (!userId) return;
@@ -107,8 +106,8 @@ export default function TrackingScreen({ navigation }) {
             Alert.alert("Permission Denied", "Location tracking requires permission.");
             return;
         }
-        // GPS Backup = 15 mins (900000ms), High-Risk = 1 min (60000ms)
-        const intervalMs = preferences.highRiskFrequency ? 60000 : 900000;
+        // GPS Backup = 15 mins (900000ms)
+        const intervalMs = 900000;
         updateLocation();
         trackingIntervalRef.current = setInterval(updateLocation, intervalMs);
     };
@@ -128,7 +127,7 @@ export default function TrackingScreen({ navigation }) {
             const payload = {
                 userId: userId,
                 location: { lat: location.coords.latitude, lon: location.coords.longitude },
-                riskScore: preferences.highRiskFrequency ? 75 : 10, // Mock risk score for now
+                riskScore: 10, // Mock risk score for now
                 batteryLevel: currentBattery
             };
             await locationService.updateLocation(payload);
@@ -139,7 +138,6 @@ export default function TrackingScreen({ navigation }) {
     };
 
     const getStatusText = () => {
-        if (preferences.highRiskFrequency) return 'High-Risk Mode: Active (1m Sync)';
         if (preferences.gpsBackup) return 'GPS Backup: Active (15m Sync)';
         return 'Tracking: Offline';
     };
@@ -202,12 +200,7 @@ export default function TrackingScreen({ navigation }) {
                             desc="Periodic GPS location backup to backend server (Every 15 mins)"
                             onPress={() => navigation.navigate('GPSBackup')}
                         />
-                        <TrackingItem
-                            icon="alert-decagram-outline"
-                            title="High-Risk Frequency"
-                            desc="Includes battery and risk score monitoring for evaluation"
-                            onPress={() => navigation.navigate('HighRisk')}
-                        />
+
                          <TrackingItem
                             icon="message-processing"
                             title="Share Offline Location"
