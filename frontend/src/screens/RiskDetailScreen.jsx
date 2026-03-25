@@ -131,28 +131,24 @@ export default function RiskDetailScreen({ navigation }) {
                             <Text style={styles.infoTitle}>Risk Level Thresholds:</Text>
                             
                             <View style={styles.thresholdRow}>
-                                <Text style={styles.thresholdText}>• 0-30: </Text>
                                 <View style={[styles.highlightBadge, { backgroundColor: '#22c55e' }]}>
                                     <Text style={styles.highlightText}>LOW</Text>
                                 </View>
                             </View>
                             
                             <View style={styles.thresholdRow}>
-                                <Text style={styles.thresholdText}>• 31-55: </Text>
                                 <View style={[styles.highlightBadge, { backgroundColor: '#eab308' }]}>
                                     <Text style={styles.highlightText}>MODERATE</Text>
                                 </View>
                             </View>
                             
                             <View style={styles.thresholdRow}>
-                                <Text style={styles.thresholdText}>• 56-80: </Text>
                                 <View style={[styles.highlightBadge, { backgroundColor: '#f97316' }]}>
                                     <Text style={styles.highlightText}>HIGH</Text>
                                 </View>
                             </View>
                             
                             <View style={styles.thresholdRow}>
-                                <Text style={styles.thresholdText}>• &gt;80: </Text>
                                 <View style={[styles.highlightBadge, { backgroundColor: '#ef4444' }]}>
                                     <Text style={styles.highlightText}>SEVERE</Text>
                                 </View>

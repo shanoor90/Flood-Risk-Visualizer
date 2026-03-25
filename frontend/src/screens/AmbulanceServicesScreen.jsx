@@ -34,8 +34,12 @@ export default function AmbulanceServicesScreen({ navigation }) {
                 body: query
             });
 
+            if (!response.ok) {
+                throw new Error(`API returned status ${response.status}`);
+            }
+
             const data = await response.json();
-            if (data.elements && data.elements.length > 0) {
+            if (data && data.elements && data.elements.length > 0) {
                 const element = data.elements[0];
                 const phone = element.tags?.phone || element.tags?.['contact:phone'] || '1990';
                 setHospital({
@@ -47,7 +51,7 @@ export default function AmbulanceServicesScreen({ navigation }) {
                 setHospital({ name: "National Suwa Seriya Ambulance", distance: "N/A", phone: "1990" });
             }
         } catch (error) {
-            console.error("Location error:", error);
+            console.error("Ambulance Fetch Error:", error);
             setHospital({ name: "National Suwa Seriya Ambulance", distance: "N/A", phone: "1990" });
         } finally {
             setLoading(false);

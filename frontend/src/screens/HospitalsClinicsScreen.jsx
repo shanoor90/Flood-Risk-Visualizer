@@ -34,24 +34,31 @@ export default function HospitalsClinicsScreen({ navigation }) {
                 body: query
             });
 
+            if (!response.ok) {
+                throw new Error(`API returned status ${response.status}`);
+            }
+
             const data = await response.json();
-            if (data.elements && data.elements.length > 0) {
+            if (data && data.elements && data.elements.length > 0) {
                 const results = data.elements.map(el => ({
                     id: el.id.toString(),
                     name: el.tags?.name || "Government Hospital",
                     phone: el.tags?.phone || el.tags?.['contact:phone'] || '1990'
                 }));
-                // Ensure unique objects, filter out perfect dupes
                 setHospitals(results);
             } else {
+                // No elements found, use fallback
                 setHospitals([
-                    { id: '1', name: "Emergency National Medical Center", phone: "1990" }
+                    { id: 'f1', name: "National Hospital of Sri Lanka", phone: "0112 691 111" },
+                    { id: 'f2', name: "Emergency Medical Service", phone: "1990" }
                 ]);
             }
         } catch (error) {
-            console.error("Location error:", error);
+            console.error("Hospital Fetch Error:", error);
+            // Robust fallback data on any failure
             setHospitals([
-                { id: '1', name: "Emergency National Medical Center", phone: "1990" }
+                { id: 'f1', name: "National Hospital of Sri Lanka", phone: "0112 691 111" },
+                { id: 'f2', name: "Emergency Medical Service", phone: "1990" }
             ]);
         } finally {
             setLoading(false);

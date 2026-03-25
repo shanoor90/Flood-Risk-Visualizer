@@ -98,8 +98,6 @@ export default function RiskMapCard({ onPress }) {
         <Text style={styles.title}>Flood Risk Visualization</Text>
         <Text style={styles.timeTag}>Last Sync: {lastUpdated}</Text>
       </View>
-      
-      {/* Replaced Placeholder with MapComponent */}
       <View style={styles.mapContainer}>
         <MapComponent 
             location={displayLocation} 
@@ -114,7 +112,6 @@ export default function RiskMapCard({ onPress }) {
              </View>
         )}
       </View>
-
       <View style={styles.riskBarContainer}>
         <Text style={styles.riskLabel}>Current Risk Level ({riskScore})</Text>
         <View style={styles.riskBar}>
@@ -124,7 +121,6 @@ export default function RiskMapCard({ onPress }) {
                 end={{ x: 1, y: 0 }}
                 style={styles.gradientBar}
             />
-            {/* Indicator triangle based on score */}
             <View style={[styles.indicator, { left: `${Math.min(100, riskScore)}%` }]} /> 
         </View>
         <Text style={[styles.riskStatus, { color: riskColor }]}>{riskLevel} Risk</Text>

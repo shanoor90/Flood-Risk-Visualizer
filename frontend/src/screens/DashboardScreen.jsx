@@ -14,34 +14,23 @@ export default function DashboardScreen({ navigation }) {
   const user = authService.getCurrentUser();
   const userName = user?.displayName || "User";
   return (
-    // 1. Wrap the entire screen in the Background Image
     <ImageBackground source={{ uri: DASHBOARD_BG_URL }} style={styles.bgImage} resizeMode="cover">
-      
-      {/* 2. Add the Light Overlay (to create the frosted effect) */}
       <View style={styles.bgOverlay}>
-        
-        {/* 3. Safe Area View handles the notches/status bar */}
         <SafeAreaView style={styles.safeArea}>
-          
           <View style={styles.container}>
             <Navbar />
-            
             <ScrollView contentContainerStyle={styles.content}>
               <View style={styles.intro}>
                   <Text style={styles.greeting}>Hello, {userName} 👋</Text>
                   <Text style={styles.subGreeting}>Stay safe during the floods.</Text>
               </View>
 
-              {/* SOS Button */}
-              <SOSButton onPress={() => navigation.navigate('SOS')} />
+              <SOSButton />
 
-              {/* Map & Risk */}
               <RiskMapCard onPress={() => navigation.navigate('RiskDetail')} />
 
-              {/* Family List */}
               <FamilyList onPress={() => navigation.navigate('Family')} />
 
-              {/* Grid for Info Cards */}
               <View style={styles.grid}>
                   <View style={styles.col}>
                       <InfoCard type="tracking" onPress={() => navigation.navigate('Tracking')} />
@@ -50,10 +39,8 @@ export default function DashboardScreen({ navigation }) {
                       <InfoCard type="survival" onPress={() => navigation.navigate('SurvivalGuide')} />
                   </View>
               </View>
-              
             </ScrollView>
           </View>
-
         </SafeAreaView>
       </View>
     </ImageBackground>

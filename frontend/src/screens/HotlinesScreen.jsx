@@ -34,8 +34,12 @@ export default function HotlinesScreen({ navigation }) {
                 body: query
             });
 
+            if (!response.ok) {
+                throw new Error(`API returned status ${response.status}`);
+            }
+
             const data = await response.json();
-            if (data.elements && data.elements.length > 0) {
+            if (data && data.elements && data.elements.length > 0) {
                 const element = data.elements[0];
                 const phone = element.tags?.phone || element.tags?.['contact:phone'] || '119';
                 setStation({
@@ -48,7 +52,7 @@ export default function HotlinesScreen({ navigation }) {
                 setStation({ name: "National Police Emergency", distance: "N/A", phone: "119" });
             }
         } catch (error) {
-            console.error("Location error:", error);
+            console.error("Police Fetch Error:", error);
             setStation({ name: "National Police Emergency", distance: "N/A", phone: "119" });
         } finally {
             setLoading(false);

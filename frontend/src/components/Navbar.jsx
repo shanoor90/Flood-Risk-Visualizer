@@ -27,7 +27,7 @@ export default function Navbar() {
 
   return (
     <View style={styles.container}>
-      <View style={{ width: 24 }} /> {/* Spacer to keep title centered if needed */}
+      <View style={{ width: 24 }} />
       <Text style={styles.title}>FloodRisk</Text>
       <TouchableOpacity onPress={handleLogout}>
         <Ionicons name="person-circle-outline" size={24} color="#1e3a8a" />

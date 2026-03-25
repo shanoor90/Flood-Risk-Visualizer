@@ -55,22 +55,15 @@ export default function SOSButton() {
       <View style={styles.header}>
         <Text style={[styles.title, { color: '#dc2626' }]}>SOS Emergency System</Text>
       </View>
-      
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={handlePress} activeOpacity={0.8}>
-            <LinearGradient
-                colors={['#ef4444', '#b91c1c']}
-                style={styles.sosBtn}
-            >
+            <LinearGradient colors={['#ef4444', '#b91c1c']} style={styles.sosBtn}>
                 <Text style={styles.sosText}>SOS</Text>
                 <Text style={styles.sendText}>SEND ALERT</Text>
             </LinearGradient>
         </TouchableOpacity>
       </View>
-      
-      <Text style={styles.desc}>
-        One-touch SOS alert sends your location & risk level.
-      </Text>
+      <Text style={styles.desc}>One-touch SOS alert sends your location & risk level.</Text>
     </GlassTiltCard>
   );
 }
