@@ -21,21 +21,22 @@ export const authService = {
       await updateProfile(user, { displayName: username });
 
       // 📦 Save user profile to Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        username: username,
-        email: email,
-        createdAt: serverTimestamp(),
-      });
+      try {
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          username: username,
+          email: email,
+          createdAt: serverTimestamp(),
+        });
+      } catch (firestoreError) {
+        console.log("Firestore profile creation failed:", firestoreError.message);
+      }
 
       // 🚪 Sign out immediately to enforce Signup -> Login flow as requested by user
       await signOut(auth);
 
       return user;
     } catch (error) {
-      if (error.code === 'permission-denied' || error.message.includes('permission')) {
-        error.message = 'Firestore Security Rules are blocking user profile creation. Please go to your Firebase Console -> Firestore Database -> Rules and allow read/write access for authenticated users.';
-      }
       throw error;
     }
   },

@@ -6,6 +6,7 @@ import * as Location from 'expo-location';
 import DetailLayout from '../components/DetailLayout';
 import { familyService } from '../services/api';
 import { authService } from '../services/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Haversine formula to compute distance between two lat/lon points
 function getDistanceInKm(lat1, lon1, lat2, lon2) {
@@ -36,18 +37,21 @@ export default function DigitalFlareScreen({ navigation }) {
             const user = authService.getCurrentUser();
             if (!user) return;
             
-            // 1. Grab Network Family Members (includes synced Connect members with homeLocations)
-            const response = await familyService.getFamilyRisk(user.uid);
-            const members = response.data || [];
+            // 1. Grab Local Contacts from Connect storage
+            const data = await AsyncStorage.getItem("connect_members_list");
+            const localMembers = data ? JSON.parse(data) : [];
             
-            // 2. Grab Live Location for Haversine
+            // 2. Grab Live Location for Haversine without hanging
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status === 'granted') {
-                const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+                let loc = await Location.getLastKnownPositionAsync({});
+                if (!loc) {
+                    loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+                }
                 setCurrentPos({ lat: loc.coords.latitude, lon: loc.coords.longitude });
             }
             
-            setFamilyMembers(members);
+            setFamilyMembers(localMembers);
         } catch (error) {
             console.log(error);
         } finally {
@@ -62,7 +66,7 @@ export default function DigitalFlareScreen({ navigation }) {
         }
 
         const validPhones = familyMembers
-            .map(m => m.phoneNumber)
+            .map(m => m.phone)
             .filter(p => p && p.trim() !== '');
 
         if (validPhones.length === 0) {
@@ -125,12 +129,12 @@ export default function DigitalFlareScreen({ navigation }) {
                             }
 
                             return (
-                                <View key={member.memberId} style={styles.memberCard}>
+                                <View key={member.id} style={styles.memberCard}>
                                     <View style={styles.memberAvatar}>
                                         <MaterialCommunityIcons name="account" size={24} color="#1d4ed8" />
                                     </View>
                                     <View style={{flex: 1}}>
-                                        <Text style={styles.memberName}>{member.memberName} <Text style={{fontWeight: 'normal', color: '#64748b'}}>({member.relation})</Text></Text>
+                                        <Text style={styles.memberName}>{member.name} <Text style={{fontWeight: 'normal', color: '#64748b'}}>({member.relation})</Text></Text>
                                         <Text style={[styles.distanceText, distanceTxt !== "Unknown Home Loc" && {color: '#dc2626', fontWeight: 'bold'}]}>
                                             <MaterialCommunityIcons name="map-marker-distance" size={14} /> {distanceTxt}
                                         </Text>

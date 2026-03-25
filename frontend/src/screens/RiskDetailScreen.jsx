@@ -15,7 +15,10 @@ export default function RiskDetailScreen({ navigation }) {
             let lat = 6.9271, lon = 79.8612; // Default (Colombo)
 
             if (status === 'granted') {
-                let location = await Location.getCurrentPositionAsync({});
+                let location = await Location.getLastKnownPositionAsync({});
+                if (!location) {
+                    location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+                }
                 lat = location.coords.latitude;
                 lon = location.coords.longitude;
             }
@@ -123,18 +126,37 @@ export default function RiskDetailScreen({ navigation }) {
                             />
                         </View>
 
-                        {/* 📝 Equations & Rules */}
+                        {/* 📝 Risk Level Info */}
                         <View style={styles.infoBox}>
-                            <Text style={styles.infoTitle}>Sri Lankan Risk Equation:</Text>
-                            <Text style={styles.formulaText}>Risk = (Rainfall × 0.5) + (Storm × 0.3) + (Humidity × 0.2)</Text>
-                            
-                            <View style={styles.divider} />
-                            
                             <Text style={styles.infoTitle}>Risk Level Thresholds:</Text>
-                            <Text style={styles.thresholdText}>• 0-30: LOW (Green)</Text>
-                            <Text style={styles.thresholdText}>• 31-55: MODERATE (Yellow)</Text>
-                            <Text style={styles.thresholdText}>• 56-80: HIGH (Orange)</Text>
-                            <Text style={styles.thresholdText}>• &gt;80: SEVERE (Red)</Text>
+                            
+                            <View style={styles.thresholdRow}>
+                                <Text style={styles.thresholdText}>• 0-30: </Text>
+                                <View style={[styles.highlightBadge, { backgroundColor: '#22c55e' }]}>
+                                    <Text style={styles.highlightText}>LOW</Text>
+                                </View>
+                            </View>
+                            
+                            <View style={styles.thresholdRow}>
+                                <Text style={styles.thresholdText}>• 31-55: </Text>
+                                <View style={[styles.highlightBadge, { backgroundColor: '#eab308' }]}>
+                                    <Text style={styles.highlightText}>MODERATE</Text>
+                                </View>
+                            </View>
+                            
+                            <View style={styles.thresholdRow}>
+                                <Text style={styles.thresholdText}>• 56-80: </Text>
+                                <View style={[styles.highlightBadge, { backgroundColor: '#f97316' }]}>
+                                    <Text style={styles.highlightText}>HIGH</Text>
+                                </View>
+                            </View>
+                            
+                            <View style={styles.thresholdRow}>
+                                <Text style={styles.thresholdText}>• &gt;80: </Text>
+                                <View style={[styles.highlightBadge, { backgroundColor: '#ef4444' }]}>
+                                    <Text style={styles.highlightText}>SEVERE</Text>
+                                </View>
+                            </View>
                             
                             <View style={styles.divider} />
                             
@@ -290,10 +312,26 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
         lineHeight: 20,
     },
+    thresholdRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 4,
+    },
     thresholdText: {
-        fontSize: 13,
+        fontSize: 14,
         color: '#475569',
-        lineHeight: 22,
+        fontWeight: '500',
+    },
+    highlightBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 6,
+        marginLeft: 4,
+    },
+    highlightText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 12,
     },
     noteText: {
         fontSize: 13,

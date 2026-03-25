@@ -151,7 +151,10 @@ export default function TrackingScreen({ navigation }) {
                 return;
             }
 
-            const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+            let location = await Location.getLastKnownPositionAsync({});
+            if (!location) {
+                location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+            }
             const { latitude, longitude } = location.coords;
             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
             const message = `I am sharing my offline location. Track me here: ${mapUrl}`;

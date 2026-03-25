@@ -254,16 +254,7 @@ export default function RealTimeMonitoringScreen({ navigation }) {
                         <MaterialCommunityIcons name="navigation" size={28} color="#fff" />
                     </TouchableOpacity>
                     
-                    <TouchableOpacity 
-                        style={[styles.routeBtn, { backgroundColor: '#0ea5e9', marginTop: 10 }]}
-                        onPress={() => setShowFamilyModal(true)}
-                    >
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.routeTitle}>Navigate to Family Member</Text>
-                            <Text style={styles.routeSubtitle}>Select a member to find safest path</Text>
-                        </View>
-                        <MaterialCommunityIcons name="account-search" size={28} color="#fff" />
-                    </TouchableOpacity>
+                    {/* Navigate to Family Member button removed based on user request */}
                 </View>
 
             </ScrollView>

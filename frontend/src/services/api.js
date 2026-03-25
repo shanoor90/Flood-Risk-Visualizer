@@ -77,6 +77,38 @@ export const familyService = {
         }
     },
 
+    // Quick Contacts operations using Firestore for simple saving
+    addConnectMember: async (userId, memberData) => {
+        try {
+            await setDoc(doc(db, 'users', userId, 'quick_contacts', memberData.id), memberData);
+            return { data: { message: "Contact added" } };
+        } catch (error) {
+            console.error("Firebase addConnectMember error:", error);
+            throw error;
+        }
+    },
+
+    getConnectMembers: async (userId) => {
+        try {
+            const q = collection(db, 'users', userId, 'quick_contacts');
+            const querySnapshot = await getDocs(q);
+            return { data: querySnapshot.docs.map(doc => doc.data()) };
+        } catch (error) {
+            console.error("Firebase getConnectMembers error:", error);
+            throw error;
+        }
+    },
+
+    removeConnectMember: async (userId, contactId) => {
+        try {
+            await deleteDoc(doc(db, 'users', userId, 'quick_contacts', contactId));
+            return { data: { message: "Contact removed" } };
+        } catch (error) {
+            console.error("Firebase removeConnectMember error:", error);
+            throw error;
+        }
+    },
+
     // Get family members securely via backend
     getFamilyRisk: async (userId) => {
         try {

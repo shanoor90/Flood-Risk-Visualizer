@@ -21,7 +21,10 @@ export default function AmbulanceServicesScreen({ navigation }) {
                 return;
             }
 
-            const location = await Location.getCurrentPositionAsync({});
+            let location = await Location.getLastKnownPositionAsync({});
+            if (!location) {
+                location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+            }
             const { latitude, longitude } = location.coords;
 
             // Overpass API to find nearest hospital

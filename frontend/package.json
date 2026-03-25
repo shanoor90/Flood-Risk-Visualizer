@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "cross-env CI=false expo start",
-    "android": "cross-env CI=false expo start --android",
-    "ios": "cross-env CI=false expo start --ios",
+    "start": "cross-env CI=false expo start --go",
+    "android": "cross-env CI=false expo start --android --go",
+    "ios": "cross-env CI=false expo start --ios --go",
     "web": "cross-env CI=false expo start --web"
   },
   "dependencies": {

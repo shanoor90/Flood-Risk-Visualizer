@@ -26,8 +26,11 @@ export default function ConnectScreen({ navigation }) {
 
     const loadConnectMembers = async () => {
         try {
-            const data = await AsyncStorage.getItem(CONNECT_MEMBERS_KEY);
-            if (data) setConnectMembers(JSON.parse(data));
+            const user = authService.getCurrentUser();
+            if (user) {
+                const response = await familyService.getConnectMembers(user.uid);
+                if (response.data) setConnectMembers(response.data);
+            }
         } catch (error) { console.log(error); }
     };
 
@@ -37,6 +40,11 @@ export default function ConnectScreen({ navigation }) {
             return;
         }
         const user = authService.getCurrentUser();
+        if (!user) {
+            Alert.alert("Error", "User not logged in.");
+            return;
+        }
+        
         const newMember = { 
             id: Date.now().toString(), 
             name: connectName, 
@@ -46,22 +54,19 @@ export default function ConnectScreen({ navigation }) {
         };
         const updatedMembers = [...connectMembers, newMember];
         try {
-            // 1. Save locally for deep offline capabilities
-            await AsyncStorage.setItem(CONNECT_MEMBERS_KEY, JSON.stringify(updatedMembers));
-            setConnectMembers(updatedMembers);
+            await familyService.addConnectMember(user.uid, newMember);
             
-            // 2. Push to backend if Online
-            if (user) {
-                await familyService.addConnectMember(user.uid, newMember).catch(e => console.log("Silent fallback, couldn't reach DB"));
-            }
-
+            setConnectMembers(updatedMembers);
             setShowAddConnect(false);
             setConnectName('');
             setConnectPhone('');
             setConnectRelation('');
             setHomeLocation(null);
-            Alert.alert("Saved", "Connection added successfully.");
-        } catch (error) { Alert.alert("Error", "Could not save connection."); }
+            Alert.alert("Saved", "Connection saved successfully.");
+        } catch (error) { 
+            console.log("Save error:", error);
+            Alert.alert("Error", "Could not save connection to database."); 
+        }
     };
 
     const fetchCurrentLocationForHome = async () => {
@@ -82,8 +87,11 @@ export default function ConnectScreen({ navigation }) {
     const removeConnectMember = async (id) => {
         const updatedMembers = connectMembers.filter(m => m.id !== id);
         try {
-            await AsyncStorage.setItem(CONNECT_MEMBERS_KEY, JSON.stringify(updatedMembers));
-            setConnectMembers(updatedMembers);
+            const user = authService.getCurrentUser();
+            if (user) {
+                await familyService.removeConnectMember(user.uid, id);
+                setConnectMembers(updatedMembers);
+            }
         } catch (error) { console.log(error); }
     };
 
@@ -138,7 +146,7 @@ export default function ConnectScreen({ navigation }) {
             <ScrollView contentContainerStyle={styles.container}>
                 
                 <Text style={styles.headerSubtitle}>
-                    Save emergency contacts directly to your local device for instant offline access.
+                    Save emergency contacts directly to your database for quick access.
                 </Text>
 
                 <TouchableOpacity 
@@ -165,13 +173,13 @@ export default function ConnectScreen({ navigation }) {
 
                         <TouchableOpacity style={styles.submitBtn} onPress={saveConnectMember}>
                             <MaterialCommunityIcons name="content-save" size={20} color="#fff" />
-                            <Text style={styles.submitBtnText}>Save Securely to Device</Text>
+                            <Text style={styles.submitBtnText}>Save</Text>
                         </TouchableOpacity>
                     </View>
                 )}
 
                 <View style={styles.listContainer}>
-                    <Text style={styles.sectionHeader}>Saved Device Contacts</Text>
+                    <Text style={styles.sectionHeader}>Saved Quick Contacts</Text>
                     {connectMembers.length === 0 ? (
                         <View style={styles.emptyState}>
                             <MaterialCommunityIcons name="contacts-outline" size={48} color="#cbd5e1" />
