@@ -7,9 +7,9 @@ exports.getFamilyRisk = async (req, res) => {
         const { userId } = req.params;
         
         const familySnapshot = await db.collection('users').doc(userId).collection('family').get();
-        const familyList = [];
-
-        for (const docSnap of familySnapshot.docs) {
+        
+        // Parallelize fetching details for all family members
+        const familyList = await Promise.all(familySnapshot.docs.map(async (docSnap) => {
             const member = docSnap.data();
             let location = null;
             let risk = { level: 'UNKNOWN', score: 0, color: '#94a3b8' };
@@ -38,7 +38,7 @@ exports.getFamilyRisk = async (req, res) => {
                  console.log("Location fetch error for", member.memberId, err.message);
             }
 
-            familyList.push({
+            return {
                 memberId: member.memberId || docSnap.id,
                 memberName: member.memberName,
                 relation: member.relation,
@@ -48,8 +48,9 @@ exports.getFamilyRisk = async (req, res) => {
                 inviteCode: member.inviteCode,
                 location,
                 risk
-            });
-        }
+            };
+        }));
+
         res.json(familyList);
     } catch (error) {
         console.error("getFamilyRisk API Error:", error);
@@ -63,22 +64,25 @@ exports.createInvite = async (req, res) => {
         const { inviterId, memberName, relation, phoneNumber } = req.body;
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         
-        // 1. Save Invite globally
-        await db.collection('invites').doc(code).set({
-            inviterId, memberName, relation, phoneNumber,
-            createdAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // 2. Drop a "pending" clone directly into the user's circle
-        await db.collection('users').doc(inviterId).collection('family').doc(`pending_${code}`).set({
-            memberId: `pending_${code}`,
-            memberName,
-            relation,
-            phoneNumber: phoneNumber || null,
-            status: 'pending',
-            inviteCode: code,
-            addedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
+        // Parallelize both writes for faster response
+        await Promise.all([
+            // 1. Save Invite globally
+            db.collection('invites').doc(code).set({
+                inviterId, memberName, relation, phoneNumber,
+                createdAt: admin.firestore.FieldValue.serverTimestamp()
+            }),
+            
+            // 2. Drop a "pending" clone directly into the user's circle
+            db.collection('users').doc(inviterId).collection('family').doc(`pending_${code}`).set({
+                memberId: `pending_${code}`,
+                memberName,
+                relation,
+                phoneNumber: phoneNumber || null,
+                status: 'pending',
+                inviteCode: code,
+                addedAt: admin.firestore.FieldValue.serverTimestamp()
+            })
+        ]);
         
         res.json({ code });
     } catch (error) {

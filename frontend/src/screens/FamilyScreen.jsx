@@ -8,17 +8,17 @@ export default function FamilyScreen({ navigation }) {
     const [familyData, setFamilyData] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchData = async (isManual = false) => {
+        // Only show full-screen loader if we have no data yet
+        if (familyData.length === 0 || isManual) {
+            setLoading(true);
+        }
+
         try {
             const user = authService.getCurrentUser();
-            if (!user) {
-                setLoading(false);
-                return;
-            }
-            const userId = user.uid;
+            if (!user) return;
             
-            // Using backend API endpoint which safely fetches exact live location without Firebase permission blocks
+            const userId = user.uid;
             const response = await familyService.getFamilyRisk(userId);
             setFamilyData(response.data || []);
         } catch (error) {

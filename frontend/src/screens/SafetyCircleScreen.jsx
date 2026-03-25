@@ -133,7 +133,7 @@ export default function SafetyCircleScreen({ navigation }) {
                     { 
                         text: "WhatsApp", 
                         onPress: () => {
-                            const message = `Join my Safety Circle on FloodVisualizer! Click this link to connect: ${joinUrl}\n\nInvite Code: ${code}\n\nNote: By joining, you allow me to see your exact location for your safety.`;
+                            const message = `Join my Safety Circle on FloodVisualizer! 🆘✨\n\nClick this secure link to connect instantly:\n\n${joinUrl}\n\nInvite Code: ${code}\n\nNote: By joining, you allow me to see your exact location for your safety.`;
                             const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(message)}`;
                             Linking.openURL(whatsappUrl).catch(() => {
                                 Alert.alert("Error", "WhatsApp is not installed on this device.");
@@ -143,7 +143,7 @@ export default function SafetyCircleScreen({ navigation }) {
                     { 
                         text: "SMS", 
                         onPress: () => {
-                            const message = `Join my Safety Circle! Click this link: ${joinUrl} (Invite Code: ${code})\n\nNote: By joining, you allow me to see your exact location for your safety.`;
+                            const message = `Connect to my Safety Circle on FloodVisualizer! 🛡️\n\nClick this link to join: ${joinUrl}\n\nCode: ${code}`;
                             const phoneUrl = Platform.OS === 'ios' ? `sms:${newMemberPhone}&body=${encodeURIComponent(message)}` : `sms:${newMemberPhone}?body=${encodeURIComponent(message)}`;
                             Linking.openURL(phoneUrl).catch(() => {
                                 Alert.alert("Error", "SMS is not supported on this device.");
@@ -153,7 +153,7 @@ export default function SafetyCircleScreen({ navigation }) {
                     {
                         text: "Share via...",
                         onPress: async () => {
-                            const message = `Join my Safety Circle! Click this link: ${joinUrl} (Invite Code: ${code})\n\nNote: By joining, you allow me to see your exact location for your safety.`;
+                            const message = `Join my Safety Circle on FloodVisualizer! 🛡️🆘\n\nClick to connect: ${joinUrl}\n\nInvite Code: ${code}`;
                             try {
                                 await Share.share({
                                     message: message,
