@@ -1,0 +1,181 @@
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Platform } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Linking from 'expo-linking';
+import * as Location from 'expo-location';
+import DetailLayout from '../components/DetailLayout';
+
+const CONNECT_MEMBERS_KEY = "connect_members_list";
+
+export default function ConnectScreen({ navigation }) {
+    const [connectMembers, setConnectMembers] = useState([]);
+    const [showAddConnect, setShowAddConnect] = useState(false);
+    
+    const [connectName, setConnectName] = useState('');
+    const [connectPhone, setConnectPhone] = useState('');
+    const [connectRelation, setConnectRelation] = useState('');
+
+    useEffect(() => {
+        loadConnectMembers();
+    }, []);
+
+    const loadConnectMembers = async () => {
+        try {
+            const data = await AsyncStorage.getItem(CONNECT_MEMBERS_KEY);
+            if (data) setConnectMembers(JSON.parse(data));
+        } catch (error) { console.log(error); }
+    };
+
+    const saveConnectMember = async () => {
+        if (!connectName || !connectPhone || !connectRelation) {
+            Alert.alert("Missing Info", "Please enter Name, Relation, and Phone.");
+            return;
+        }
+        const newMember = { 
+            id: Date.now().toString(), 
+            name: connectName, 
+            phone: connectPhone, 
+            relation: connectRelation 
+        };
+        const updatedMembers = [...connectMembers, newMember];
+        try {
+            await AsyncStorage.setItem(CONNECT_MEMBERS_KEY, JSON.stringify(updatedMembers));
+            setConnectMembers(updatedMembers);
+            setShowAddConnect(false);
+            setConnectName('');
+            setConnectPhone('');
+            setConnectRelation('');
+            Alert.alert("Saved", "Local connection added successfully.");
+        } catch (error) { Alert.alert("Error", "Could not save connection."); }
+    };
+
+    const removeConnectMember = async (id) => {
+        const updatedMembers = connectMembers.filter(m => m.id !== id);
+        try {
+            await AsyncStorage.setItem(CONNECT_MEMBERS_KEY, JSON.stringify(updatedMembers));
+            setConnectMembers(updatedMembers);
+        } catch (error) { console.log(error); }
+    };
+
+    const handleCall = (phone) => Linking.openURL(`tel:${phone}`);
+    const handleText = (phone) => Linking.openURL(Platform.OS === 'ios' ? `sms:${phone}` : `sms:${phone}?body=`);
+    const handleShareLocation = async (phone) => {
+        try {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') { Alert.alert("Permission denied", "Need location to share."); return; }
+            let location = await Location.getCurrentPositionAsync({});
+            const { latitude, longitude } = location.coords;
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+            const message = `I need help or want to share my location! Here is where I am: ${mapsUrl}`;
+            const url = Platform.OS === 'ios' ? `sms:${phone}&body=${encodeURIComponent(message)}` : `sms:${phone}?body=${encodeURIComponent(message)}`;
+            Linking.openURL(url);
+        } catch (error) { Alert.alert("Error", "Could not fetch location."); }
+    };
+
+    const renderConnectMember = (item) => (
+        <View key={item.id} style={styles.memberCard}>
+            <View style={styles.memberInfo}>
+                <View style={styles.avatar}>
+                    <MaterialCommunityIcons name="account" size={28} color="#15803d" />
+                </View>
+                <View style={{flex: 1}}>
+                    <Text style={styles.memberName}>{item.name}</Text>
+                    <Text style={styles.memberRelation}>{item.relation} • {item.phone}</Text>
+                </View>
+                <TouchableOpacity onPress={() => removeConnectMember(item.id)} style={{padding: 8}}>
+                    <MaterialCommunityIcons name="trash-can-outline" size={24} color="#ef4444" />
+                </TouchableOpacity>
+            </View>
+            <View style={styles.connectActions}>
+                <TouchableOpacity style={[styles.actionBtn, {backgroundColor: '#dcfce7'}]} onPress={() => handleCall(item.phone)}>
+                    <MaterialCommunityIcons name="phone" size={20} color="#16a34a" />
+                    <Text style={[styles.linkText, {color: '#16a34a'}]}>Call</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.actionBtn, {backgroundColor: '#e0f2fe'}]} onPress={() => handleText(item.phone)}>
+                    <MaterialCommunityIcons name="message-text" size={20} color="#0284c7" />
+                    <Text style={[styles.linkText, {color: '#0284c7'}]}>Text</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.actionBtn, {backgroundColor: '#fef3c7'}]} onPress={() => handleShareLocation(item.phone)}>
+                    <MaterialCommunityIcons name="map-marker-radius" size={20} color="#d97706" />
+                    <Text style={[styles.linkText, {color: '#d97706'}]}>Share Location</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+
+    return (
+        <DetailLayout title="Local Contacts" icon="card-account-phone" color="#f3f4f6" navigation={navigation}>
+            <ScrollView contentContainerStyle={styles.container}>
+                
+                <Text style={styles.headerSubtitle}>
+                    Save emergency contacts directly to your local device for instant offline access.
+                </Text>
+
+                <TouchableOpacity 
+                    style={[styles.primaryBtn, showAddConnect && styles.primaryBtnCancel]} 
+                    onPress={() => setShowAddConnect(!showAddConnect)}
+                >
+                    <MaterialCommunityIcons name={showAddConnect ? "close" : "card-account-phone-outline"} size={22} color="#fff" />
+                    <Text style={styles.primaryBtnText}>{showAddConnect ? "Cancel Form" : "Add New Connection"}</Text>
+                </TouchableOpacity>
+
+                {showAddConnect && (
+                    <View style={styles.formContainer}>
+                        <Text style={styles.formHeader}>Connection Form</Text>
+                        <TextInput style={styles.input} placeholder="Name (e.g. Dad)" value={connectName} onChangeText={setConnectName} />
+                        <TextInput style={styles.input} placeholder="Relation (e.g. Parent)" value={connectRelation} onChangeText={setConnectRelation} />
+                        <TextInput style={styles.input} placeholder="Phone Number" value={connectPhone} onChangeText={setConnectPhone} keyboardType="phone-pad" />
+                        <TouchableOpacity style={styles.submitBtn} onPress={saveConnectMember}>
+                            <MaterialCommunityIcons name="content-save" size={20} color="#fff" />
+                            <Text style={styles.submitBtnText}>Save Securely to Device</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+                <View style={styles.listContainer}>
+                    <Text style={styles.sectionHeader}>Saved Device Contacts</Text>
+                    {connectMembers.length === 0 ? (
+                        <View style={styles.emptyState}>
+                            <MaterialCommunityIcons name="contacts-outline" size={48} color="#cbd5e1" />
+                            <Text style={styles.emptyText}>No quick connections added yet.</Text>
+                        </View>
+                    ) : (
+                        connectMembers.map(item => renderConnectMember(item))
+                    )}
+                </View>
+            </ScrollView>
+        </DetailLayout>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: { padding: 20, paddingBottom: 60 },
+    headerSubtitle: { fontSize: 15, color: '#475569', marginBottom: 20, textAlign: 'center', lineHeight: 22 },
+    
+    primaryBtn: { flexDirection: 'row', backgroundColor: '#374151', padding: 16, borderRadius: 12, justifyContent: 'center', alignItems: 'center', gap: 10, elevation: 2, marginBottom: 20 },
+    primaryBtnCancel: { backgroundColor: '#ef4444' },
+    primaryBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+
+    formContainer: { backgroundColor: '#fff', padding: 20, borderRadius: 16, marginBottom: 24, borderWidth: 1, borderColor: '#e5e7eb', elevation: 2 },
+    formHeader: { fontSize: 18, fontWeight: 'bold', marginBottom: 16, color: '#1f2937' },
+    input: { backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, padding: 14, marginBottom: 12, fontSize: 16 },
+    submitBtn: { flexDirection: 'row', backgroundColor: '#15803d', padding: 14, borderRadius: 8, alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 },
+    submitBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+
+    sectionHeader: { fontSize: 18, fontWeight: 'bold', color: '#111827', marginBottom: 16 },
+    listContainer: { gap: 16 },
+    
+    memberCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, elevation: 2, borderWidth: 1, borderColor: '#f3f4f6' },
+    memberInfo: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 16 },
+    avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#dcfce7', justifyContent: 'center', alignItems: 'center' },
+    memberName: { fontSize: 18, fontWeight: 'bold', color: '#1f2937' },
+    memberRelation: { fontSize: 14, color: '#64748b', marginTop: 4 },
+    
+    connectActions: { flexDirection: 'row', gap: 10, justifyContent: 'space-between' },
+    actionBtn: { flex: 1, flexDirection: 'row', paddingVertical: 12, borderRadius: 10, justifyContent: 'center', alignItems: 'center', gap: 6 },
+    linkText: { fontSize: 14, fontWeight: 'bold' },
+
+    emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#f1f5f9', borderStyle: 'dashed' },
+    emptyText: { color: '#94a3b8', fontSize: 15, marginTop: 12 },
+});

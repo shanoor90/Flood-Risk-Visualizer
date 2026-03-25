@@ -127,6 +127,25 @@ export default function FamilyScreen({ navigation }) {
                         desc="View full map visualization and geographical risk"
                         onPress={() => navigation.navigate('RealTimeMonitoring')}
                     />
+                    {/* Brand New Dedicated Feature Screens */}
+                    <FeatureCard
+                        icon="heart-pulse"
+                        title="Dynamic Positive Guidance"
+                        desc="Receive contextual advice based on emotional state and weather"
+                        onPress={() => navigation.navigate('DynamicGuidance')}
+                    />
+                    <FeatureCard
+                        icon="weather-windy"
+                        title="Breathing Space Board"
+                        desc="Start a 30-second gamified breathing exercise for quick calm"
+                        onPress={() => navigation.navigate('BreathingSpace')}
+                    />
+                    <FeatureCard
+                        icon="card-account-phone"
+                        title="Connect / Quick Contacts"
+                        desc="Access local device contacts for instantaneous Call, SMS, or Loc Share"
+                        onPress={() => navigation.navigate('Connect')}
+                    />
                 </View>
             </ScrollView>
         </SafeAreaView>

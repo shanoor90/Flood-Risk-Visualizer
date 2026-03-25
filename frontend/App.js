@@ -58,6 +58,9 @@ import SafetyCircleScreen from './src/screens/SafetyCircleScreen';
 import RealTimeMonitoringScreen from './src/screens/RealTimeMonitoringScreen';
 import AutomaticAlertsScreen from './src/screens/AutomaticAlertsScreen';
 import JoinFamilyScreen from './src/screens/JoinFamilyScreen';
+import DynamicGuidanceScreen from './src/screens/DynamicGuidanceScreen';
+import BreathingSpaceScreen from './src/screens/BreathingSpaceScreen';
+import ConnectScreen from './src/screens/ConnectScreen';
 import PreparednessChecklistsScreen from './src/screens/PreparednessChecklistsScreen';
 import EvacuationProceduresScreen from './src/screens/EvacuationProceduresScreen';
 import EmergencySuppliesScreen from './src/screens/EmergencySuppliesScreen';
@@ -150,6 +153,9 @@ export default function App() {
               <Stack.Screen name="RealTimeMonitoring" component={RealTimeMonitoringScreen} />
               <Stack.Screen name="AutomaticAlerts" component={AutomaticAlertsScreen} />
               <Stack.Screen name="JoinFamily" component={JoinFamilyScreen} />
+              <Stack.Screen name="DynamicGuidance" component={DynamicGuidanceScreen} />
+              <Stack.Screen name="BreathingSpace" component={BreathingSpaceScreen} />
+              <Stack.Screen name="Connect" component={ConnectScreen} />
               <Stack.Screen name="PreparednessChecklists" component={PreparednessChecklistsScreen} />
               <Stack.Screen name="EvacuationProcedures" component={EvacuationProceduresScreen} />
               <Stack.Screen name="EmergencySupplies" component={EmergencySuppliesScreen} />

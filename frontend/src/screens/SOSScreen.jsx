@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert, SafeAreaView, Platform } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert, SafeAreaView, Platform, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { sosService } from '../services/api';
 import { dataService } from '../services/dataService';
@@ -66,6 +66,16 @@ export default function SOSScreen({ navigation }) {
                     >
                         <Text style={styles.sosText}>{loading ? "SENDING..." : "TRIGGER SOS"}</Text>
                     </TouchableOpacity>
+
+                    <View style={styles.secondaryActions}>
+                        <TouchableOpacity 
+                            style={[styles.actionButton, { backgroundColor: '#3b82f6' }]} 
+                            onPress={() => Linking.openURL('tel:0778644924')}
+                        >
+                            <MaterialCommunityIcons name="phone" size={24} color="#fff" />
+                            <Text style={styles.actionButtonText}>Call Emergency</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 <View style={styles.infoBox}>
@@ -103,6 +113,27 @@ const styles = StyleSheet.create({
     },
     sosText: { color: '#fff', fontSize: 22, fontWeight: 'bold' },
     disabled: { opacity: 0.6 },
+    secondaryActions: {
+        flexDirection: 'row',
+        gap: 12,
+        marginTop: 24,
+        width: '100%',
+        justifyContent: 'center',
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 12,
+        gap: 8,
+        elevation: 2,
+    },
+    actionButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
     infoBox: { backgroundColor: '#fef2f2', padding: 20, borderRadius: 16, marginTop: 20 },
     infoTitle: { fontSize: 16, fontWeight: 'bold', color: '#b91c1c', marginBottom: 10 },
     infoText: { fontSize: 14, color: '#dc2626', marginBottom: 6 },

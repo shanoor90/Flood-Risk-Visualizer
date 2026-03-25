@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore';
 
 // Keep backend URL for services that need server-side logic (like Weather/Risk calculation)
-const BASE_URL = 'http://192.168.8.195:5000/api/v1';
+const BASE_URL = 'http://10.34.9.167:5000/api/v1';
 
 const api = axios.create({
     baseURL: BASE_URL,
