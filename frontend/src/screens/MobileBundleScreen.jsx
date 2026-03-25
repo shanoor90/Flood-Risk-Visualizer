@@ -25,10 +25,6 @@ export default function MobileBundleScreen({ navigation }) {
                 </View>
 
                 <View style={styles.infoSection}>
-                    <Text style={styles.introText}>
-                        The Mobile Bundle is a preloaded emergency information package embedded directly within the application.
-                    </Text>
-
                     <Text style={styles.sectionHeader}>What's Included:</Text>
                     
                     <View style={styles.bulletList}>
@@ -58,12 +54,6 @@ export default function MobileBundleScreen({ navigation }) {
                         />
                     </View>
 
-                    <View style={styles.footerNote}>
-                        <MaterialCommunityIcons name="wifi-off" size={20} color="#059669" style={{ marginBottom: 4 }} />
-                        <Text style={styles.footerText}>
-                            This bundle is stored locally on the device, ensuring continuous accessibility even when the user is offline. Periodic updates synchronize new emergency data when internet connectivity becomes available.
-                        </Text>
-                    </View>
                 </View>
             </ScrollView>
         </DetailLayout>

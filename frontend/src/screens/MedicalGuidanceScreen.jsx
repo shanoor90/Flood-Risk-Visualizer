@@ -25,9 +25,6 @@ export default function MedicalGuidanceScreen({ navigation }) {
                 </View>
 
                 <View style={styles.infoSection}>
-                    <Text style={styles.introText}>
-                        This section provides step-by-step first-aid and emergency medical instructions tailored to flood-related incidents.
-                    </Text>
 
                     <Text style={styles.sectionHeader}>Emergency Protocols:</Text>
                     
@@ -70,12 +67,6 @@ export default function MedicalGuidanceScreen({ navigation }) {
                         />
                     </View>
 
-                    <View style={styles.footerNote}>
-                        <MaterialCommunityIcons name="alert-circle-outline" size={20} color="#059669" style={{ marginBottom: 4 }} />
-                        <Text style={styles.footerText}>
-                            Instructions are presented in a simple, structured format to ensure usability under high-stress conditions. The goal is to assist users in stabilizing injuries until professional medical help arrives.
-                        </Text>
-                    </View>
                 </View>
             </ScrollView>
         </DetailLayout>

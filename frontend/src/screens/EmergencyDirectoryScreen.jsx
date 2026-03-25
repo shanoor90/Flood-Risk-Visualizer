@@ -25,9 +25,6 @@ export default function EmergencyDirectoryScreen({ navigation }) {
                 </View>
 
                 <View style={styles.infoSection}>
-                    <Text style={styles.introText}>
-                        The Emergency Directory provides locally stored contact information and shelter details relevant to flood emergencies.
-                    </Text>
 
                     <Text style={styles.sectionHeader}>Key Contacts & locations:</Text>
                     
@@ -52,12 +49,6 @@ export default function EmergencyDirectoryScreen({ navigation }) {
                         />
                     </View>
 
-                    <View style={styles.footerNote}>
-                        <MaterialCommunityIcons name="map-marker-radius" size={20} color="#059669" style={{ marginBottom: 4 }} />
-                        <Text style={styles.footerText}>
-                            Location-based filtering ensures users can quickly identify the nearest safe locations. This directory is periodically updated when online to maintain accuracy.
-                        </Text>
-                    </View>
                 </View>
             </ScrollView>
         </DetailLayout>
