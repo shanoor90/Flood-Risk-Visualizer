@@ -131,27 +131,13 @@ export default function SafetyCircleScreen({ navigation }) {
                 [
                     { text: "Done" },
                     { 
-                        text: "SMS", 
+                        text: "Send SMS", 
                         onPress: () => {
                             const message = `Connect to my Safety Circle on FloodVisualizer! 🛡️\n\nClick this link to join: ${joinUrl}\n\nCode: ${code}`;
                             const phoneUrl = Platform.OS === 'ios' ? `sms:${newMemberPhone}&body=${encodeURIComponent(message)}` : `sms:${newMemberPhone}?body=${encodeURIComponent(message)}`;
                             Linking.openURL(phoneUrl).catch(() => {
                                 Alert.alert("Error", "SMS is not supported on this device.");
                             });
-                        }
-                    },
-                    {
-                        text: "Share via...",
-                        onPress: async () => {
-                            const message = `Join my Safety Circle on FloodVisualizer! 🛡️🆘\n\nClick to connect: ${joinUrl}\n\nInvite Code: ${code}`;
-                            try {
-                                await Share.share({
-                                    message: message,
-                                    title: 'FloodVisualizer Invite'
-                                });
-                            } catch (error) {
-                                console.log('Share error:', error.message);
-                            }
                         }
                     }
                 ]

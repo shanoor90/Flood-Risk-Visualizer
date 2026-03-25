@@ -205,9 +205,9 @@ export default function TrackingScreen({ navigation }) {
                         />
 
                          <TrackingItem
-                            icon="message-processing"
-                            title="Share Offline Location"
-                            desc="Send location via SMS when internet is unavailable"
+                            icon="message-flash"
+                            title="SMS Offline Location"
+                            desc="Send coordinates via standard SMS (Direct to Messenger)"
                             onPress={shareOfflineLocation}
                         />
                         <TrackingItem

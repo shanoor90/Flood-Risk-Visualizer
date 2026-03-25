@@ -131,7 +131,7 @@ export default function ConnectScreen({ navigation }) {
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.actionBtn, {backgroundColor: '#e0f2fe'}]} onPress={() => handleText(item.phone)}>
                     <MaterialCommunityIcons name="message-text" size={20} color="#0284c7" />
-                    <Text style={[styles.linkText, {color: '#0284c7'}]}>Text</Text>
+                    <Text style={[styles.linkText, {color: '#0284c7'}]}>SMS</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.actionBtn, {backgroundColor: '#fef3c7'}]} onPress={() => handleShareLocation(item.phone)}>
                     <MaterialCommunityIcons name="map-marker-radius" size={20} color="#d97706" />
