@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     StyleSheet, View, Text, ScrollView, TouchableOpacity,
-    TextInput, Switch, Alert, Linking, ActivityIndicator, AppState
+    TextInput, Switch, Alert, ActivityIndicator, AppState, Platform, Share
 } from 'react-native';
 import DetailLayout from '../components/DetailLayout';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import { familyService, locationService, inviteService } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import * as Battery from 'expo-battery';
+import * as Linking from 'expo-linking';
 
 // Mock User ID remove, use authService
 import { authService } from '../services/authService';
@@ -121,17 +122,46 @@ export default function SafetyCircleScreen({ navigation }) {
             setNewMemberRelation('');
             setNewMemberPhone('');
 
+            // Create the deep link for one-click join
+            const joinUrl = Linking.createURL('join', { queryParams: { code } });
+
             Alert.alert(
                 "Invite Created!",
                 `Share this code with ${newMemberName}: ${code}\n\nA "Pending" member has been added to your list. They will appear as "Joined" once they accept.`,
                 [
                     { text: "Done" },
                     { 
-                        text: "Send SMS", 
+                        text: "WhatsApp", 
                         onPress: () => {
-                            const message = `Join my Safety Circle on FloodVisualizer! Open the app and enter code: ${code}\n\nDownload: https://floodvisualizer.page.link/app`;
+                            const message = `Join my Safety Circle on FloodVisualizer! Click this link to connect: ${joinUrl}\n\nInvite Code: ${code}\n\nNote: By joining, you allow me to see your exact location for your safety.`;
+                            const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(message)}`;
+                            Linking.openURL(whatsappUrl).catch(() => {
+                                Alert.alert("Error", "WhatsApp is not installed on this device.");
+                            });
+                        }
+                    },
+                    { 
+                        text: "SMS", 
+                        onPress: () => {
+                            const message = `Join my Safety Circle! Click this link: ${joinUrl} (Invite Code: ${code})\n\nNote: By joining, you allow me to see your exact location for your safety.`;
                             const phoneUrl = Platform.OS === 'ios' ? `sms:${newMemberPhone}&body=${encodeURIComponent(message)}` : `sms:${newMemberPhone}?body=${encodeURIComponent(message)}`;
-                            Linking.openURL(phoneUrl);
+                            Linking.openURL(phoneUrl).catch(() => {
+                                Alert.alert("Error", "SMS is not supported on this device.");
+                            });
+                        }
+                    },
+                    {
+                        text: "Share via...",
+                        onPress: async () => {
+                            const message = `Join my Safety Circle! Click this link: ${joinUrl} (Invite Code: ${code})\n\nNote: By joining, you allow me to see your exact location for your safety.`;
+                            try {
+                                await Share.share({
+                                    message: message,
+                                    title: 'FloodVisualizer Invite'
+                                });
+                            } catch (error) {
+                                console.log('Share error:', error.message);
+                            }
                         }
                     }
                 ]

@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { auth, db, storage } from './src/firebase';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import * as Linking from 'expo-linking';
 
 // 🔥 Firebase Connection Test
 const testFirebaseConnection = async () => {
@@ -107,8 +108,20 @@ export default function App() {
     );
   }
 
-  return (
-    <NavigationContainer>
+    // Deep Linking Configuration
+    const prefix = Linking.createURL('/');
+    const linking = {
+        prefixes: [prefix, 'floodvisualizer://'],
+        config: {
+            screens: {
+                Dashboard: 'dashboard',
+                JoinFamily: 'join',
+            },
+        },
+    };
+
+    return (
+        <NavigationContainer linking={linking}>
       <View style={{ flex: 1, backgroundColor: '#121212' }}>
         <Stack.Navigator
           screenOptions={{

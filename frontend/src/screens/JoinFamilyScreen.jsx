@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { inviteService } from '../services/api';
@@ -9,6 +9,14 @@ export default function JoinFamilyScreen({ navigation }) {
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
     const [inviteDetail, setInviteDetail] = useState(null);
+    const { params } = navigation.getState().routes.find(r => r.name === 'JoinFamily') || {};
+    const routeCode = params?.code;
+
+    useEffect(() => {
+        if (routeCode && routeCode.length === 6) {
+            checkCode(routeCode);
+        }
+    }, [routeCode]);
 
     const checkCode = async (val) => {
         setCode(val);
@@ -34,26 +42,39 @@ export default function JoinFamilyScreen({ navigation }) {
             return;
         }
 
+        // Stop if not logged in
         const user = authService.getCurrentUser();
         if (!user) {
              Alert.alert("Error", "You must be logged in to join a family.");
              return;
         }
 
-        setLoading(true);
-        try {
-            await inviteService.acceptInvite(code, user.uid, phone);
-            
-            Alert.alert(
-                "Welcome!", 
-                "You have successfully joined the family circle. Turn on Tracking in the next screen to share your status.",
-                [{ text: "Go to Tracking", onPress: () => navigation.navigate('Tracking') }]
-            );
-        } catch (error) {
-            Alert.alert("Error", error.message || "Failed to join family.");
-        } finally {
-            setLoading(false);
-        }
+        // Ask for final explicit consent as requested before connecting
+        Alert.alert(
+            "Location Tracking Permission", 
+            `Do you grant permission for ${inviteDetail ? inviteDetail.inviterName : "your family member"} to track your exact location at all times for your safety?`,
+            [
+                { text: "Decline", style: 'cancel' },
+                { 
+                    text: "Allow & Connect", 
+                    onPress: async () => {
+                        setLoading(true);
+                        try {
+                            await inviteService.acceptInvite(code, user.uid, phone);
+                            Alert.alert(
+                                "Welcome!", 
+                                "You have successfully joined the family circle and are now sharing your location.",
+                                [{ text: "Open My Dashboard", onPress: () => navigation.navigate('Dashboard') }]
+                            );
+                        } catch (error) {
+                            Alert.alert("Error", error.message || "Failed to connect.");
+                        } finally {
+                            setLoading(false);
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     return (

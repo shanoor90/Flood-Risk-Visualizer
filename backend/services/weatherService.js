@@ -3,17 +3,18 @@ const axios = require('axios');
 class WeatherService {
     constructor() {
         this.baseUrl = 'https://api.open-meteo.com/v1/forecast';
-        this.cache = { data: null, timestamp: 0 };
+        this.cache = {}; // Cache map by location keys
         this.CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
     }
 
     async getWeatherData(lat, lon) {
         try {
-            // Check Cache
+            // Check Cache Specific to Location
+            const cacheKey = `${parseFloat(lat).toFixed(2)},${parseFloat(lon).toFixed(2)}`;
             const now = Date.now();
-            if (this.cache.data && (now - this.cache.timestamp < this.CACHE_DURATION)) {
-                console.log("Serving Weather from Cache");
-                return this.cache.data;
+            if (this.cache[cacheKey] && (now - this.cache[cacheKey].timestamp < this.CACHE_DURATION)) {
+                console.log("Serving Weather from Cache for", cacheKey);
+                return this.cache[cacheKey].data;
             }
 
             // Using Open-Meteo (No API key required for non-commercial use)
@@ -35,20 +36,22 @@ class WeatherService {
             
             const daily = response.data.daily;
             const dailyRain = daily ? daily.precipitation_sum : [];
+            const totalRain = dailyRain.reduce((sum, val) => sum + (val || 0), 0);
+            const dynamicWaterLevel = parseFloat((0.2 + (totalRain / 40)).toFixed(2));
 
             const weatherData = {
                 temp: current.temperature_2m,
                 humidity: current.relative_humidity_2m,
                 rainfall: current.rain || 0,
                 stormIntensity: Math.min(100, current.wind_speed_10m * 2), 
-                waterLevel: 1.5, 
+                waterLevel: Math.max(0, dynamicWaterLevel), // Dynamic Calculation
                 elevation: elevation,
                 time: current.time,
                 forecast: dailyRain // Array of next days rainfall
             };
 
             // Update Cache
-            this.cache = { data: weatherData, timestamp: now };
+            this.cache[cacheKey] = { data: weatherData, timestamp: now };
             
             console.log("Weather Data Fetched:", weatherData);
             return weatherData;
@@ -100,11 +103,13 @@ class WeatherService {
 
     getMockData() {
         return {
-            temp: 28,
-            humidity: 85,
-            rainfall: 45,
-            stormIntensity: 60,
-            waterLevel: 1.8,
+            temp: 28.5,
+            humidity: 78,
+            rainfall: 12,
+            stormIntensity: 45,
+            waterLevel: 1.2,
+            elevation: 10,
+            time: new Date().toISOString(),
             forecast: [10, 5, 0, 20, 45, 12, 5] // Mock 7-day forecast
         };
     }

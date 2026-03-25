@@ -1,28 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, Platform, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, Platform, RefreshControl, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { familyService } from '../services/api';
-
-const MOCK_GOV_ALERTS = [
-    { id: 1, title: "Met Dept Warning", message: "Heavy rainfall expected in Western Province.", type: "warning", time: "2h ago" },
-    { id: 2, title: "Irrigation Dept", message: "Kelani River water level rising. Be alert.", type: "danger", time: "4h ago" }
-];
+import { authService } from '../services/authService';
 
 export default function FamilyScreen({ navigation }) {
     const [familyData, setFamilyData] = useState([]);
-    const [systemAlerts, setSystemAlerts] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const user = authService.getCurrentUser();
-            if (!user) return;
+            if (!user) {
+                setLoading(false);
+                return;
+            }
             const userId = user.uid;
+            
+            // Using backend API endpoint which safely fetches exact live location without Firebase permission blocks
             const response = await familyService.getFamilyRisk(userId);
-            const members = response.data || [];
-            setFamilyData(members);
-            generateSystemAlerts(members);
+            setFamilyData(response.data || []);
         } catch (error) {
             console.log("Family fetch error", error);
         } finally {
@@ -30,66 +28,9 @@ export default function FamilyScreen({ navigation }) {
         }
     };
 
-    const generateSystemAlerts = (members) => {
-        const alerts = [];
-        
-        members.forEach(m => {
-            // 1. Flood Risk Alert
-            if (m.risk?.level === 'HIGH' || m.risk?.level === 'SEVERE') {
-                alerts.push({
-                    id: `risk-${m.memberId}`,
-                    title: `High Flood Risk: ${m.memberName}`,
-                    message: `${m.memberName} is in a ${m.risk.level} risk zone!`,
-                    icon: "home-flood",
-                    color: "#ef4444",
-                    priority: 1
-                });
-            }
-
-            // 2. Extreme Danger (High Risk + GPS Lost)
-            if ((m.risk?.level === 'HIGH' || m.risk?.level === 'SEVERE') && m.gpsStatus === 'Lost') {
-                alerts.unshift({ // Add to top
-                    id: `extreme-${m.memberId}`,
-                    title: `EXTREME DANGER: ${m.memberName}`,
-                    message: `Cannot locate ${m.memberName} in High Risk Zone! Last seen: ${new Date(m.lastSeen).toLocaleTimeString()}`,
-                    icon: "alert-octagon",
-                    color: "#b91c1c",
-                    priority: 0
-                });
-            }
-
-            // 3. Low Battery
-            if (m.batteryLevel < 10) {
-                alerts.push({
-                    id: `batt-${m.memberId}`,
-                    title: `Low Battery: ${m.memberName}`,
-                    message: `${m.memberName}'s battery is critically low (${m.batteryLevel}%).`,
-                    icon: "battery-alert",
-                    color: "#f59e0b",
-                    priority: 2
-                });
-            }
-
-            // 4. GPS Loss
-            if (m.gpsStatus === 'Lost' && m.risk?.level !== 'HIGH') {
-                alerts.push({
-                    id: `gps-${m.memberId}`,
-                    title: `GPS Signal Lost: ${m.memberName}`,
-                    message: `No location update from ${m.memberName} recently.`,
-                    icon: "satellite-uplink",
-                    color: "#64748b",
-                    priority: 3
-                });
-            }
-        });
-
-        // Sort by priority
-        setSystemAlerts(alerts.sort((a, b) => a.priority - b.priority));
-    };
-
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 30000); // Poll every 30s
+        const interval = setInterval(fetchData, 15000); // Poll every 15s for live tracking
         return () => clearInterval(interval);
     }, []);
 
@@ -110,60 +51,82 @@ export default function FamilyScreen({ navigation }) {
                 contentContainerStyle={styles.container}
                 refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchData} />}
             >
-                {/* 1. Alerts Dashboard */}
-                <View style={styles.alertSection}>
-                    <Text style={styles.sectionHeader}>⚠️ Recent Alerts</Text>
-                    {systemAlerts.length > 0 ? (
-                        systemAlerts.map(alert => (
-                            <View key={alert.id} style={[styles.alertCard, { borderLeftColor: alert.color }]}>
-                                <MaterialCommunityIcons name={alert.icon} size={28} color={alert.color} />
-                                <View style={styles.alertContent}>
-                                    <Text style={[styles.alertTitle, { color: alert.color }]}>{alert.title}</Text>
-                                    <Text style={styles.alertMsg}>{alert.message}</Text>
+                {/* Cleaned up UI: Government Announcements and Recent Alerts have been completely removed as requested. */}
+
+                {/* Live Family Location Hub */}
+                <View style={styles.sectionHeaderRow}>
+                    <Text style={styles.sectionHeader}>Your Family Circle</Text>
+                    <MaterialCommunityIcons name="radar" size={24} color="#16a34a" />
+                </View>
+                <Text style={styles.subHeaderText}>Live Location & Status Tracking</Text>
+                
+                {loading && familyData.length === 0 ? (
+                     <ActivityIndicator size="large" color="#0369a1" style={{ marginVertical: 30 }} />
+                ) : familyData.length > 0 ? (
+                    <View style={styles.listContainer}>
+                        {familyData.map(member => (
+                            <View key={member.memberId} style={[styles.memberCard, { borderLeftColor: member.risk?.color || '#94a3b8' }]}>
+                                <View style={styles.memberInfo}>
+                                    <View style={[styles.avatar, { backgroundColor: (member.risk?.color || '#94a3b8') + '20' }]}>
+                                        <MaterialCommunityIcons name="account" size={28} color={member.risk?.color || '#94a3b8'} />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.memberName}>{member.memberName} <Text style={styles.relation}>({member.relation})</Text></Text>
+                                        
+                                        {/* Exact Location Section */}
+                                        <View style={styles.locationContainer}>
+                                            <MaterialCommunityIcons name="map-marker-radius" size={16} color="#0369a1" />
+                                            <Text style={styles.locationText}>
+                                                {member.location 
+                                                    ? `Lat: ${member.location.lat.toFixed(4)}, Lon: ${member.location.lon.toFixed(4)}` 
+                                                    : 'Location Unknown'}
+                                            </Text>
+                                        </View>
+
+                                        {/* Stats Row */}
+                                        <View style={styles.statsRow}>
+                                            <View style={styles.badge}>
+                                                <MaterialCommunityIcons name="battery-charging" size={14} color="#64748b" />
+                                                <Text style={styles.badgeText}>{member.batteryLevel ? `${member.batteryLevel}%` : 'N/A'}</Text>
+                                            </View>
+                                            <View style={[styles.badge, { backgroundColor: member.gpsStatus === "Active" ? '#dcfce7' : '#fee2e2' }]}>
+                                                <MaterialCommunityIcons name={member.gpsStatus === "Active" ? "satellite-uplink" : "satellite-variant"} size={14} color={member.gpsStatus === "Active" ? '#16a34a' : '#ef4444'} />
+                                                <Text style={[styles.badgeText, { color: member.gpsStatus === "Active" ? '#16a34a' : '#ef4444' }]}>{member.gpsStatus || "Inactive"}</Text>
+                                            </View>
+                                        </View>
+                                    </View>
                                 </View>
                             </View>
-                        ))
-                    ) : (
-                        <Text style={styles.emptyText}>No active system alerts. Everyone is safe.</Text>
-                    )}
-                </View>
+                        ))}
+                    </View>
+                ) : (
+                    <View style={styles.emptyState}>
+                        <MaterialCommunityIcons name="account-search" size={48} color="#cbd5e1" />
+                        <Text style={styles.emptyText}>You haven't added any family members yet.</Text>
+                    </View>
+                )}
 
-                {/* 2. Government Alerts */}
-                <View style={styles.alertSection}>
-                    <Text style={styles.sectionHeader}>📢 Government Announcements</Text>
-                    {MOCK_GOV_ALERTS.map(alert => (
-                        <View key={alert.id} style={styles.govCard}>
-                            <View style={styles.govHeader}>
-                                <Text style={styles.govTitle}>{alert.title}</Text>
-                                <Text style={styles.govTime}>{alert.time}</Text>
-                            </View>
-                            <Text style={styles.govMsg}>{alert.message}</Text>
-                        </View>
-                    ))}
-                </View>
-
-                {/* 3. Feature Actions (Existing) */}
-                <Text style={styles.sectionHeader}>Quick Actions</Text>
+                {/* Quick Actions */}
+                <Text style={[styles.sectionHeader, { marginTop: 24 }]}>Management Actions</Text>
                 <View style={styles.cardsContainer}>
                     <FeatureCard
-                        icon="account-circle-outline"
+                        icon="account-multiple-plus"
                         title="Personalized Safety Circle"
-                        desc="Manage family members & phone numbers"
+                        desc="Invite new family members & send tracking requests"
                         onPress={() => navigation.navigate('SafetyCircle')}
                     />
                     <FeatureCard
-                        icon="power"
+                        icon="account-arrow-right"
+                        title="Join a Safety Circle"
+                        desc="Enter an invite code to securely share your location"
+                        onPress={() => navigation.navigate('JoinFamily')}
+                    />
+                    <FeatureCard
+                        icon="map-search-outline"
                         title="Real-Time Monitoring"
-                        desc="View family locations & flood map"
+                        desc="View full map visualization and geographical risk"
                         onPress={() => navigation.navigate('RealTimeMonitoring')}
                     />
-                </View>
-
-                <View style={styles.infoCard}>
-                    <Text style={styles.infoTitle}>Stay Connected</Text>
-                    <Text style={styles.infoText}>
-                        Ensure family members keep their GPS on. Alerts are generated automatically based on their last known location.
-                    </Text>
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -174,55 +137,55 @@ function FeatureCard({ icon, title, desc, onPress }) {
     return (
         <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
             <View style={styles.iconBox}>
-                <MaterialCommunityIcons name={icon} size={30} color="#0077b6" />
+                <MaterialCommunityIcons name={icon} size={30} color="#0284c7" />
             </View>
             <View style={styles.cardContent}>
                 <Text style={styles.cardTitle}>{title}</Text>
                 <Text style={styles.cardDesc}>{desc}</Text>
             </View>
+            <MaterialCommunityIcons name="chevron-right" size={24} color="#cbd5e1" />
         </TouchableOpacity>
     );
 }
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#f0f9ff', paddingTop: Platform.OS === 'android' ? 30 : 0 },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12, backgroundColor: '#f0f9ff' },
+    safeArea: { flex: 1, backgroundColor: '#f8fafc', paddingTop: Platform.OS === 'android' ? 30 : 0 },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
     headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#1e3a8a' },
     headerIcon: { marginRight: 8 },
-    container: { padding: 20 },
+    container: { padding: 20, paddingBottom: 40 },
     
-    sectionHeader: { fontSize: 18, fontWeight: 'bold', color: '#0f172a', marginBottom: 12, marginTop: 10 },
+    sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, marginTop: 10 },
+    sectionHeader: { fontSize: 20, fontWeight: 'bold', color: '#0f172a' },
+    subHeaderText: { fontSize: 14, color: '#64748b', marginBottom: 20, fontStyle: 'italic' },
     
-    alertSection: { marginBottom: 20 },
-    alertCard: {
-        flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 16, borderRadius: 12,
-        marginBottom: 10, borderLeftWidth: 4, elevation: 2, shadowColor: '#000', shadowOpacity: 0.1
+    listContainer: { gap: 12 },
+    memberCard: {
+        backgroundColor: '#fff', borderRadius: 16, padding: 16,
+        borderLeftWidth: 5, elevation: 3, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8
     },
-    alertContent: { marginLeft: 12, flex: 1 },
-    alertTitle: { fontSize: 15, fontWeight: 'bold', marginBottom: 2 },
-    alertMsg: { fontSize: 13, color: '#475569' },
-    emptyText: { color: '#64748b', fontStyle: 'italic', marginLeft: 4 },
+    memberInfo: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+    avatar: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center' },
+    memberName: { fontSize: 18, fontWeight: 'bold', color: '#1e293b', marginBottom: 6 },
+    relation: { fontSize: 14, fontWeight: 'normal', color: '#64748b' },
+    
+    locationContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f0f9ff', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, marginBottom: 8, alignSelf: 'flex-start' },
+    locationText: { fontSize: 13, color: '#0369a1', marginLeft: 6, fontWeight: 'bold' },
+    
+    statsRow: { flexDirection: 'row', gap: 8 },
+    badge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, gap: 4 },
+    badgeText: { fontSize: 12, color: '#64748b', fontWeight: 'bold' },
 
-    govCard: { backgroundColor: '#fff7ed', padding: 16, borderRadius: 12, marginBottom: 10, borderWidth: 1, borderColor: '#ffedd5' },
-    govHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-    govTitle: { fontSize: 14, fontWeight: 'bold', color: '#c2410c' },
-    govTime: { fontSize: 12, color: '#9a3412' },
-    govMsg: { fontSize: 13, color: '#431407' },
+    emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#f1f5f9', borderStyle: 'dashed' },
+    emptyText: { color: '#94a3b8', fontSize: 15, marginTop: 12 },
 
-    cardsContainer: { gap: 12 },
+    cardsContainer: { gap: 12, marginTop: 10 },
     card: {
         backgroundColor: '#fff', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center',
-        elevation: 2, shadowColor: '#000', shadowOpacity: 0.05
+        elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, borderWidth: 1, borderColor: '#f8fafc'
     },
-    iconBox: { padding: 10, marginRight: 10, backgroundColor: '#e0f2fe', borderRadius: 50 },
+    iconBox: { padding: 12, marginRight: 14, backgroundColor: '#e0f2fe', borderRadius: 12 },
     cardContent: { flex: 1 },
-    cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#1e3a8a', marginBottom: 2 },
-    cardDesc: { fontSize: 13, color: '#64748b' },
-
-    infoCard: {
-        backgroundColor: 'rgba(224, 242, 254, 0.8)', borderRadius: 16, padding: 20, marginTop: 30,
-        borderWidth: 1, borderColor: '#bae6fd'
-    },
-    infoTitle: { fontSize: 16, fontWeight: 'bold', color: '#0369a1', marginBottom: 8 },
-    infoText: { fontSize: 14, color: '#0e7490' },
+    cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#0f172a', marginBottom: 4 },
+    cardDesc: { fontSize: 13, color: '#64748b', lineHeight: 18 },
 });
