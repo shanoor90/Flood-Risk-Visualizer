@@ -8,7 +8,7 @@ import InfoCard from '../components/InfoCard';
 import { authService } from '../services/authService';
 
 // The original rainy background image URL
-const DASHBOARD_BG_URL = 'https://images.unsplash.com/photo-1547683908-21ad53fd1c06?q=80&w=2070&auto=format&fit=crop';
+const DASHBOARD_BG_URL = 'https://images.unsplash.com/photo-1569012871812-f38ee64cd54c?q=80&w=2070&auto=format&fit=crop';
 
 export default function DashboardScreen({ navigation }) {
   const user = authService.getCurrentUser();
