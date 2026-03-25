@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, Switch, TouchableOpacity, Alert, ActivityIndicator, SafeAreaView, Platform, ScrollView, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Battery from 'expo-battery';
+import * as SMS from 'expo-sms';
 import { locationService } from '../services/api';
 import { authService } from '../services/authService';
 import * as Location from 'expo-location';
@@ -159,7 +160,12 @@ export default function TrackingScreen({ navigation }) {
             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
             const message = `I am sharing my offline location. Track me here: ${mapUrl}`;
             
-            Linking.openURL(`sms:?body=${encodeURIComponent(message)}`);
+            const isAvailable = await SMS.isAvailableAsync();
+            if (isAvailable) {
+                await SMS.sendSMSAsync([], message);
+            } else {
+                Linking.openURL(`sms:?body=${encodeURIComponent(message)}`);
+            }
         } catch (error) {
             Alert.alert("Error", "Could not get location.");
         } finally {

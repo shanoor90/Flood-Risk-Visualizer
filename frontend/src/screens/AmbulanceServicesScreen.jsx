@@ -29,16 +29,33 @@ export default function AmbulanceServicesScreen({ navigation }) {
 
             // Overpass API to find nearest hospital
             const query = `[out:json];node(around:15000,${latitude},${longitude})[amenity=hospital];out 1;`;
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
             const response = await fetch('https://overpass-api.de/api/interpreter', {
                 method: 'POST',
-                body: query
+                body: query,
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 throw new Error(`API returned status ${response.status}`);
             }
 
-            const data = await response.json();
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("API returned non-JSON response");
+            }
+
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                throw new Error("Failed to parse JSON response");
+            }
+
             if (data && data.elements && data.elements.length > 0) {
                 const element = data.elements[0];
                 const phone = element.tags?.phone || element.tags?.['contact:phone'] || '1990';
@@ -51,7 +68,7 @@ export default function AmbulanceServicesScreen({ navigation }) {
                 setHospital({ name: "National Suwa Seriya Ambulance", distance: "N/A", phone: "1990" });
             }
         } catch (error) {
-            console.error("Ambulance Fetch Error:", error);
+            console.error("Ambulance Fetch Error:", error.message);
             setHospital({ name: "National Suwa Seriya Ambulance", distance: "N/A", phone: "1990" });
         } finally {
             setLoading(false);

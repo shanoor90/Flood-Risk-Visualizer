@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import * as Battery from 'expo-battery';
 import * as Linking from 'expo-linking';
+import * as SMS from 'expo-sms';
 
 // Mock User ID remove, use authService
 import { authService } from '../services/authService';
@@ -132,12 +133,17 @@ export default function SafetyCircleScreen({ navigation }) {
                     { text: "Done" },
                     { 
                         text: "Send SMS", 
-                        onPress: () => {
+                        onPress: async () => {
                             const message = `Connect to my Safety Circle on FloodVisualizer! 🛡️\n\nClick this link to join: ${joinUrl}\n\nCode: ${code}`;
-                            const phoneUrl = Platform.OS === 'ios' ? `sms:${newMemberPhone}&body=${encodeURIComponent(message)}` : `sms:${newMemberPhone}?body=${encodeURIComponent(message)}`;
-                            Linking.openURL(phoneUrl).catch(() => {
-                                Alert.alert("Error", "SMS is not supported on this device.");
-                            });
+                            const isAvailable = await SMS.isAvailableAsync();
+                            if (isAvailable) {
+                                await SMS.sendSMSAsync([newMemberPhone], message);
+                            } else {
+                                const phoneUrl = Platform.OS === 'ios' ? `sms:${newMemberPhone}&body=${encodeURIComponent(message)}` : `sms:${newMemberPhone}?body=${encodeURIComponent(message)}`;
+                                Linking.openURL(phoneUrl).catch(() => {
+                                    Alert.alert("Error", "SMS is not supported on this device.");
+                                });
+                            }
                         }
                     }
                 ]

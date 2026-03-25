@@ -29,16 +29,33 @@ export default function HospitalsClinicsScreen({ navigation }) {
 
             // Overpass API to find nearest hospitals (limit to 3)
             const query = `[out:json];node(around:20000,${latitude},${longitude})[amenity=hospital];out 3;`;
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
             const response = await fetch('https://overpass-api.de/api/interpreter', {
                 method: 'POST',
-                body: query
+                body: query,
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 throw new Error(`API returned status ${response.status}`);
             }
 
-            const data = await response.json();
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("API returned non-JSON response");
+            }
+
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                throw new Error("Failed to parse JSON response");
+            }
+
             if (data && data.elements && data.elements.length > 0) {
                 const results = data.elements.map(el => ({
                     id: el.id.toString(),
@@ -54,7 +71,7 @@ export default function HospitalsClinicsScreen({ navigation }) {
                 ]);
             }
         } catch (error) {
-            console.error("Hospital Fetch Error:", error);
+            console.error("Hospital Fetch Error:", error.message);
             // Robust fallback data on any failure
             setHospitals([
                 { id: 'f1', name: "National Hospital of Sri Lanka", phone: "0112 691 111" },

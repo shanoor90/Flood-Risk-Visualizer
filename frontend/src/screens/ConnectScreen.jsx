@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput, Alert,
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
+import * as SMS from 'expo-sms';
 import * as Location from 'expo-location';
 import DetailLayout from '../components/DetailLayout';
 import { familyService } from '../services/api';
@@ -96,7 +97,14 @@ export default function ConnectScreen({ navigation }) {
     };
 
     const handleCall = (phone) => Linking.openURL(`tel:${phone}`);
-    const handleText = (phone) => Linking.openURL(Platform.OS === 'ios' ? `sms:${phone}` : `sms:${phone}?body=`);
+    const handleText = async (phone) => {
+        const isAvailable = await SMS.isAvailableAsync();
+        if (isAvailable) {
+            await SMS.sendSMSAsync([phone], '');
+        } else {
+            Linking.openURL(Platform.OS === 'ios' ? `sms:${phone}` : `sms:${phone}?body=`);
+        }
+    };
     const handleShareLocation = async (phone) => {
         try {
             let { status } = await Location.requestForegroundPermissionsAsync();
@@ -105,8 +113,14 @@ export default function ConnectScreen({ navigation }) {
             const { latitude, longitude } = location.coords;
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
             const message = `I need help or want to share my location! Here is where I am: ${mapsUrl}`;
-            const url = Platform.OS === 'ios' ? `sms:${phone}&body=${encodeURIComponent(message)}` : `sms:${phone}?body=${encodeURIComponent(message)}`;
-            Linking.openURL(url);
+            
+            const isAvailable = await SMS.isAvailableAsync();
+            if (isAvailable) {
+                await SMS.sendSMSAsync([phone], message);
+            } else {
+                const url = Platform.OS === 'ios' ? `sms:${phone}&body=${encodeURIComponent(message)}` : `sms:${phone}?body=${encodeURIComponent(message)}`;
+                Linking.openURL(url);
+            }
         } catch (error) { Alert.alert("Error", "Could not fetch location."); }
     };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert, Platform, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
+import * as SMS from 'expo-sms';
 import * as Location from 'expo-location';
 import DetailLayout from '../components/DetailLayout';
 import { familyService } from '../services/api';
@@ -77,15 +78,19 @@ export default function DigitalFlareScreen({ navigation }) {
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${currentPos.lat},${currentPos.lon}`;
         const message = `I'm at ${currentPos.lat.toFixed(4)},${currentPos.lon.toFixed(4)}. I am safe. My fear level is Low. Check my location here: ${mapsUrl}`;
 
-        // Create SMS String (Device specific comma vs semicolon handling)
-        const recipientString = Platform.OS === 'ios' ? validPhones.join(',') : validPhones.join(';');
-        const smsUrl = Platform.OS === 'ios' 
-            ? `sms:${recipientString}&body=${encodeURIComponent(message)}`
-            : `sms:${recipientString}?body=${encodeURIComponent(message)}`;
-
-        Linking.openURL(smsUrl).catch(() => {
-            Alert.alert("Error", "Could not open your SMS messenger.");
-        });
+        const isAvailable = await SMS.isAvailableAsync();
+        if (isAvailable) {
+            await SMS.sendSMSAsync(validPhones, message);
+        } else {
+            // Fallback to Linking if SMS is not available
+            const recipientString = Platform.OS === 'ios' ? validPhones.join(',') : validPhones.join(';');
+            const smsUrl = Platform.OS === 'ios' 
+                ? `sms:${recipientString}&body=${encodeURIComponent(message)}`
+                : `sms:${recipientString}?body=${encodeURIComponent(message)}`;
+            Linking.openURL(smsUrl).catch(() => {
+                Alert.alert("Error", "Could not open your SMS messenger.");
+            });
+        }
     };
 
     return (

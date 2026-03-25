@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Alert, Linking } from 'react-native';
+import * as SMS from 'expo-sms';
 import { LinearGradient } from 'expo-linear-gradient';
 import GlassTiltCard from './GlassTiltCard';
 import * as Location from 'expo-location';
@@ -35,7 +36,14 @@ export default function SOSButton() {
             },
             {
                 text: "✉️ Send SMS",
-                onPress: () => Linking.openURL(`sms:${emergencyNumber}?body=${encodeURIComponent(sosMessage)}`)
+                onPress: async () => {
+                    const isAvailable = await SMS.isAvailableAsync();
+                    if (isAvailable) {
+                        await SMS.sendSMSAsync([emergencyNumber], sosMessage);
+                    } else {
+                        Linking.openURL(`sms:${emergencyNumber}?body=${encodeURIComponent(sosMessage)}`)
+                    }
+                }
             },
             { text: "Cancel", style: "cancel" }
         ]
