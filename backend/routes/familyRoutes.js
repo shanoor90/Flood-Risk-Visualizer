@@ -3,6 +3,7 @@ const router = express.Router();
 const familyController = require('../controllers/familyController');
 
 router.get('/:userId', familyController.getFamilyRisk);
+router.post('/connect', familyController.addConnectMember);
 router.post('/invite', familyController.createInvite);
 router.get('/invite/:code', familyController.getInviteDetail);
 router.post('/accept/:code', familyController.acceptInvite);

@@ -69,7 +69,7 @@ export default function HotlinesScreen({ navigation }) {
                 setStation({ name: "National Police Emergency", distance: "N/A", phone: "119" });
             }
         } catch (error) {
-            console.error("Police Fetch Error:", error.message);
+            console.log("Police Fetch Error:", error.message);
             setStation({ name: "National Police Emergency", distance: "N/A", phone: "119" });
         } finally {
             setLoading(false);

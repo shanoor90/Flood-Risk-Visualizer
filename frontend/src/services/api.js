@@ -77,34 +77,40 @@ export const familyService = {
         }
     },
 
-    // Quick Contacts operations using Firestore for simple saving
+    // Quick Contacts operations using backend API
     addConnectMember: async (userId, memberData) => {
         try {
-            await setDoc(doc(db, 'users', userId, 'quick_contacts', memberData.id), memberData);
-            return { data: { message: "Contact added" } };
+            return await api.post('/family/connect', { userId, connectMember: memberData });
         } catch (error) {
-            console.error("Firebase addConnectMember error:", error);
+            console.error("API addConnectMember error:", error);
             throw error;
         }
     },
 
     getConnectMembers: async (userId) => {
         try {
-            const q = collection(db, 'users', userId, 'quick_contacts');
-            const querySnapshot = await getDocs(q);
-            return { data: querySnapshot.docs.map(doc => doc.data()) };
+            const response = await api.get(`/family/${userId}`);
+            const quickContacts = response.data
+                .filter(m => m.isConnectContact)
+                .map(m => ({
+                    id: m.memberId,
+                    name: m.memberName,
+                    phone: m.phoneNumber,
+                    relation: m.relation,
+                    homeLocation: m.homeLocation
+                }));
+            return { data: quickContacts };
         } catch (error) {
-            console.error("Firebase getConnectMembers error:", error);
+            console.error("API getConnectMembers error:", error);
             throw error;
         }
     },
 
     removeConnectMember: async (userId, contactId) => {
         try {
-            await deleteDoc(doc(db, 'users', userId, 'quick_contacts', contactId));
-            return { data: { message: "Contact removed" } };
+            return await api.delete(`/family/${userId}/${contactId}`);
         } catch (error) {
-            console.error("Firebase removeConnectMember error:", error);
+            console.error("API removeConnectMember error:", error);
             throw error;
         }
     },

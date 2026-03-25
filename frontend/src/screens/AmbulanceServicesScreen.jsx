@@ -68,7 +68,7 @@ export default function AmbulanceServicesScreen({ navigation }) {
                 setHospital({ name: "National Suwa Seriya Ambulance", distance: "N/A", phone: "1990" });
             }
         } catch (error) {
-            console.error("Ambulance Fetch Error:", error.message);
+            console.log("Ambulance Fetch Error:", error.message);
             setHospital({ name: "National Suwa Seriya Ambulance", distance: "N/A", phone: "1990" });
         } finally {
             setLoading(false);

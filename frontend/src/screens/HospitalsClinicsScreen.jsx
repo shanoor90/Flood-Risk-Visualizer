@@ -71,7 +71,7 @@ export default function HospitalsClinicsScreen({ navigation }) {
                 ]);
             }
         } catch (error) {
-            console.error("Hospital Fetch Error:", error.message);
+            console.log("Hospital Fetch Error:", error.message);
             // Robust fallback data on any failure
             setHospitals([
                 { id: 'f1', name: "National Hospital of Sri Lanka", phone: "0112 691 111" },

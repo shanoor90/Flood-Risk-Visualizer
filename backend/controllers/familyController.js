@@ -46,6 +46,8 @@ exports.getFamilyRisk = async (req, res) => {
                 batteryLevel: member.batteryLevel,
                 gpsStatus: member.gpsStatus,
                 inviteCode: member.inviteCode,
+                isConnectContact: member.isConnectContact || false,
+                homeLocation: member.homeLocation || null,
                 location,
                 risk
             };
@@ -168,7 +170,7 @@ exports.addConnectMember = async (req, res) => {
         const { userId, connectMember } = req.body;
         // connectMember has: name, phone, relation, homeLocation: {lat, lon}
         
-        const memberId = 'connect_' + Date.now().toString();
+        const memberId = connectMember.id || ('connect_' + Date.now().toString());
         
         await db.collection('users').doc(userId).collection('family').doc(memberId).set({
             memberId: memberId, 
