@@ -47,7 +47,8 @@ class WeatherService {
                 waterLevel: Math.max(0, dynamicWaterLevel), // Dynamic Calculation
                 elevation: elevation,
                 time: current.time,
-                forecast: dailyRain // Array of next days rainfall
+                forecast: dailyRain, // Array of next days rainfall
+                totalRain: totalRain
             };
 
             // Update Cache
@@ -62,10 +63,10 @@ class WeatherService {
     }
 
     calculateRiskScore(data) {
-        const { rainfall, stormIntensity, humidity, waterLevel, elevation, time } = data;
+        const { rainfall, totalRain, stormIntensity, humidity, waterLevel, elevation, time } = data;
         
         // Equation: Risk Score = (Rainfall × 0.5) + (Storm × 0.3) + (Humidity × 0.2)
-        let score = (rainfall * 0.5) + (stormIntensity * 0.3) + (humidity * 0.2);
+        let score = (totalRain * 0.5) + (stormIntensity * 0.3) + (humidity * 0.2);
         
         let level = 'LOW';
         let color = 'green';
@@ -92,7 +93,7 @@ class WeatherService {
 
         // 2. Elevation Awareness Override
         // Logic: If (Rain > 50mm) AND (Elevation is Low < 10m), then (Status = Severe).
-        if (rainfall > 50 && elevation < 10) {
+        if (totalRain > 50 && elevation < 10) {
             level = 'SEVERE';
             color = 'red';
             console.log("Severe Risk Triggered: High Rain + Low Elevation");
